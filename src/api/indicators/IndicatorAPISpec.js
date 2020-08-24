@@ -29,10 +29,10 @@ define(
         MCT,
         MCTIndicators
     ) {
-        describe("The Indicator API", function () {
-            var openmct;
-            var directive;
-            var holderElement;
+        xdescribe("The Indicator API", function () {
+            let openmct;
+            let directive;
+            let holderElement;
 
             beforeEach(function () {
                 openmct = new MCT();
@@ -41,7 +41,7 @@ define(
             });
 
             describe("The simple indicator", function () {
-                var simpleIndicator;
+                let simpleIndicator;
 
                 beforeEach(function () {
                     simpleIndicator = openmct.indicators.simpleIndicator();
@@ -97,7 +97,7 @@ define(
             });
 
             it("Supports registration of a completely custom indicator", function () {
-                var customIndicator = document.createElement('div');
+                const customIndicator = document.createElement('div');
                 customIndicator.classList.add('customIndicator');
                 customIndicator.textContent = 'A custom indicator';
 

@@ -19,7 +19,6 @@
  * this source code distribution or the Licensing information page available
  * at runtime from the About dialog for additional information.
  *****************************************************************************/
-/*global define,Promise*/
 
 /**
  * Module defining EventTelemetryProvider. Created by chacskaylo on 06/18/2015.
@@ -34,11 +33,9 @@ define(
          * @constructor
          */
         function EventTelemetryProvider($q, $timeout) {
-            var
-	            subscriptions = [],
-	            genInterval = 1000,
-                generating = false,
-                id = Math.random() * 100000;
+            var subscriptions = [],
+                genInterval = 1000,
+                generating = false;
 
             //
             function matchesSource(request) {
@@ -47,7 +44,6 @@ define(
 
             // Used internally; this will be repacked by doPackage
             function generateData(request) {
-	            //console.log("generateData " + (Date.now() - startTime).toString());
                 return {
                     key: request.key,
                     telemetry: new EventTelemetry(request, genInterval)
@@ -60,6 +56,7 @@ define(
                 results.forEach(function (result) {
                     packaged[result.key] = result.telemetry;
                 });
+
                 // Format as expected (sources -> keys -> telemetry)
                 return { eventGenerator: packaged };
             }

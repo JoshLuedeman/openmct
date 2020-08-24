@@ -31,9 +31,10 @@ define([
     }
 
     RootRegistry.prototype.getRoots = function () {
-        var promises = this.providers.map(function (provider) {
+        const promises = this.providers.map(function (provider) {
             return provider();
         });
+
         return Promise.all(promises)
             .then(_.flatten);
     };
@@ -43,7 +44,7 @@ define([
     }
 
     RootRegistry.prototype.addRoot = function (key) {
-        if (isKey(key) || (_.isArray(key) && _.every(key, isKey))) {
+        if (isKey(key) || (Array.isArray(key) && key.every(isKey))) {
             this.providers.push(function () {
                 return key;
             });

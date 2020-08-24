@@ -19,7 +19,6 @@
  * this source code distribution or the Licensing information page available
  * at runtime from the About dialog for additional information.
  *****************************************************************************/
-/*global define */
 define (
     ['./RemsTelemetrySeries'],
     function (RemsTelemetrySeries) {
@@ -72,10 +71,11 @@ define (
          * This data source does not support real-time subscriptions
          */
         RemsTelemetryProvider.prototype.subscribe = function (callback, requests) {
-            return function() {};
+            return function () {};
         };
+
         RemsTelemetryProvider.prototype.unsubscribe = function (callback, requests) {
-            return function() {};
+            return function () {};
         };
 
         return RemsTelemetryProvider;

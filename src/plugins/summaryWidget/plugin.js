@@ -14,7 +14,7 @@ define([
 
     function plugin() {
 
-        var widgetType = {
+        const widgetType = {
             name: 'Summary Widget',
             description: 'A compact status update for collections of telemetry-producing items',
             creatable: true,
@@ -61,7 +61,6 @@ define([
                     "key": "url",
                     "name": "URL",
                     "control": "textfield",
-                    "pattern": "^(ftp|https?)\\:\\/\\/",
                     "required": false,
                     "cssClass": "l-input-lg"
                 },
@@ -70,15 +69,15 @@ define([
                     "name": "Tab to Open Hyperlink",
                     "control": "select",
                     "options": [
-                            {
-                                "value": "thisTab",
-                                "name": "Open in this tab"
-                            },
-                            {
-                                "value": "newTab",
-                                "name": "Open in a new tab"
-                            }
-                        ],
+                        {
+                            "value": "thisTab",
+                            "name": "Open in this tab"
+                        },
+                        {
+                            "value": "newTab",
+                            "name": "Open in a new tab"
+                        }
+                    ],
                     "cssClass": "l-inline"
                 }
             ]
@@ -86,8 +85,10 @@ define([
 
         return function install(openmct) {
             openmct.types.addType('summary-widget', widgetType);
-            openmct.legacyExtension('policies', {category: 'composition',
-                implementation: SummaryWidgetsCompositionPolicy, depends: ['openmct']
+            openmct.legacyExtension('policies', {
+                category: 'composition',
+                implementation: SummaryWidgetsCompositionPolicy,
+                depends: ['openmct']
             });
             openmct.legacyExtension('policies', {
                 category: 'view',

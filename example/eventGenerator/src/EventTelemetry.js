@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Open MCT, Copyright (c) 2014-2017, United States Government
+ * Open MCT, Copyright (c) 2014-2020, United States Government
  * as represented by the Administrator of the National Aeronautics and Space
  * Administration. All rights reserved.
  *
@@ -19,42 +19,41 @@
  * this source code distribution or the Licensing information page available
  * at runtime from the About dialog for additional information.
  *****************************************************************************/
-/*global define */
 
 /**
- * Module defining EventTelemetry. 
+ * Module defining EventTelemetry.
  * Created by chacskaylo on 06/18/2015.
- * Modified by shale on 06/23/2015. 
+ * Modified by shale on 06/23/2015.
  */
 define(
-    ['text!../data/transcript.json'],
-    function (transcript) {
+    ['../data/transcript.json'],
+    function (messages) {
         "use strict";
 
-        var firstObservedTime = Date.now(),
-            messages = JSON.parse(transcript);
-        
+        var firstObservedTime = Date.now();
+
         function EventTelemetry(request, interval) {
 
             var latestObservedTime = Date.now(),
                 count = Math.floor((latestObservedTime - firstObservedTime) / interval),
                 generatorData = {};
-            
+
             generatorData.getPointCount = function () {
                 return count;
             };
 
             generatorData.getDomainValue = function (i, domain) {
-                return i * interval +
-                        (domain !== 'delta' ? firstObservedTime : 0);
+                return i * interval
+                        + (domain !== 'delta' ? firstObservedTime : 0);
             };
-            
-	        generatorData.getRangeValue = function (i, range) {
-		        var domainDelta = this.getDomainValue(i) - firstObservedTime,
+
+            generatorData.getRangeValue = function (i, range) {
+                var domainDelta = this.getDomainValue(i) - firstObservedTime,
                     ind = i % messages.length;
+
                 return messages[ind] + " - [" + domainDelta.toString() + "]";
-	        };
-            
+            };
+
             return generatorData;
         }
 

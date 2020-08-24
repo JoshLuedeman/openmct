@@ -35,9 +35,8 @@ define(
          * @memberof platform/framework
          * @constructor
          */
-        function BundleResolver(extensionResolver, requireConfigurator, $log) {
+        function BundleResolver(extensionResolver, $log) {
             this.extensionResolver = extensionResolver;
-            this.requireConfigurator = requireConfigurator;
             this.$log = $log;
         }
 
@@ -53,7 +52,6 @@ define(
          */
         BundleResolver.prototype.resolveBundles = function (bundles) {
             var extensionResolver = this.extensionResolver,
-                requireConfigurator = this.requireConfigurator,
                 $log = this.$log;
 
             /*
@@ -98,6 +96,7 @@ define(
 
                 function resolveCategory(category) {
                     result[category] = [];
+
                     return Promise.all(
                         bundle.getExtensions(category).map(resolveExtension)
                     );
@@ -115,9 +114,6 @@ define(
                 return Promise.all(categories.map(resolveCategory))
                     .then(giveResult);
             }
-
-            // First, make sure Require is suitably configured
-            requireConfigurator.configure(bundles);
 
             // Then, resolve all extension implementations.
             return Promise.all(bundles.map(resolveBundle))

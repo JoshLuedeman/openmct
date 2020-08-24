@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Open MCT, Copyright (c) 2014-2018, United States Government
+ * Open MCT, Copyright (c) 2014-2020, United States Government
  * as represented by the Administrator of the National Aeronautics and Space
  * Administration. All rights reserved.
  *
@@ -20,8 +20,6 @@
  * at runtime from the About dialog for additional information.
  *****************************************************************************/
 
-/*global define*/
-
 define([
     "./src/chart/MCTChartDirective",
     "./src/plot/MCTPlotDirective",
@@ -37,11 +35,11 @@ define([
     "./src/inspector/HideElementPoolDirective",
     "./src/services/ExportImageService",
     './src/PlotViewPolicy',
-    "text!./res/templates/plot-options.html",
-    "text!./res/templates/plot-options-browse.html",
-    "text!./res/templates/plot-options-edit.html",
-    "text!./res/templates/stacked-plot.html",
-    "text!./res/templates/plot.html"
+    "./res/templates/plot-options.html",
+    "./res/templates/plot-options-browse.html",
+    "./res/templates/plot-options-edit.html",
+    "./res/templates/stacked-plot.html",
+    "./res/templates/plot.html"
 ], function (
     MCTChartDirective,
     MCTPlotDirective,
@@ -64,13 +62,14 @@ define([
     PlotTemplate
 ) {
 
-    var installed = false;
+    let installed = false;
 
     function PlotPlugin() {
         return function install(openmct) {
             if (installed) {
                 return;
             }
+
             installed = true;
 
             openmct.legacyRegistry.register("openmct/plot", {
@@ -250,7 +249,8 @@ define([
                                 {"has": "telemetry"}
                             ],
                             "model": {
-                                "composition": []
+                                "composition": [],
+                                "configuration": {}
                             },
                             "properties": [],
                             "priority": 890

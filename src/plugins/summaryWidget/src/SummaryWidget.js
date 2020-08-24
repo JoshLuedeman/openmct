@@ -1,11 +1,11 @@
 define([
-    'text!../res/widgetTemplate.html',
+    '../res/widgetTemplate.html',
     './Rule',
     './ConditionManager',
     './TestDataManager',
     './WidgetDnD',
     './eventHelpers',
-    '../../../api/objects/object-utils',
+    'objectUtils',
     'lodash',
     'zepto'
 ], function (
@@ -21,9 +21,9 @@ define([
 ) {
 
     //default css configuration for new rules
-    var DEFAULT_PROPS = {
-        'color': '#ffffff',
-        'background-color': '#38761d',
+    const DEFAULT_PROPS = {
+        'color': '#cccccc',
+        'background-color': '#666666',
         'border-color': 'rgba(0,0,0,0)'
     };
 
@@ -74,15 +74,12 @@ define([
         this.show = this.show.bind(this);
         this.destroy = this.destroy.bind(this);
         this.addRule = this.addRule.bind(this);
-        this.onEdit = this.onEdit.bind(this);
 
         this.addHyperlink(domainObject.url, domainObject.openNewTab);
         this.watchForChanges(openmct, domainObject);
 
-        var id = objectUtils.makeKeyString(this.domainObject.identifier),
-            self = this,
-            oldDomainObject,
-            statusCapability;
+        const id = objectUtils.makeKeyString(this.domainObject.identifier);
+        const self = this;
 
         /**
          * Toggles the configuration area for test data in the view
@@ -90,8 +87,9 @@ define([
          */
         function toggleTestData() {
             self.outerWrapper.toggleClass('expanded-widget-test-data');
-            self.toggleTestDataControl.toggleClass('expanded');
+            self.toggleTestDataControl.toggleClass('c-disclosure-triangle--expanded');
         }
+
         this.listenTo(this.toggleTestDataControl, 'click', toggleTestData);
 
         /**
@@ -100,22 +98,13 @@ define([
          */
         function toggleRules() {
             self.outerWrapper.toggleClass('expanded-widget-rules');
-            self.toggleRulesControl.toggleClass('expanded');
+            self.toggleRulesControl.toggleClass('c-disclosure-triangle--expanded');
         }
+
         this.listenTo(this.toggleRulesControl, 'click', toggleRules);
 
         openmct.$injector.get('objectService')
-            .getObjects([id])
-            .then(function (objs) {
-                oldDomainObject = objs[id];
-                statusCapability = oldDomainObject.getCapability('status');
-                self.editListenerUnsubscribe = statusCapability.listen(self.onEdit);
-                if (statusCapability.get('editing')) {
-                    self.onEdit(['editing']);
-                } else {
-                    self.onEdit([]);
-                }
-            });
+            .getObjects([id]);
     }
 
     /**
@@ -145,8 +134,8 @@ define([
      */
     SummaryWidget.prototype.watchForChanges = function (openmct, domainObject) {
         this.watchForChangesUnsubscribe = openmct.objects.observe(domainObject, '*', function (newDomainObject) {
-            if (newDomainObject.url !== this.domainObject.url ||
-                    newDomainObject.openNewTab !== this.domainObject.openNewTab) {
+            if (newDomainObject.url !== this.domainObject.url
+                    || newDomainObject.openNewTab !== this.domainObject.openNewTab) {
                 this.addHyperlink(newDomainObject.url, newDomainObject.openNewTab);
             }
         }.bind(this));
@@ -159,7 +148,7 @@ define([
      *                            Widget's view.
      */
     SummaryWidget.prototype.show = function (container) {
-        var self = this;
+        const self = this;
         this.container = container;
         $(container).append(this.domElement);
         $('.widget-test-data', this.domElement).append(this.testDataManager.getDOM());
@@ -172,7 +161,6 @@ define([
         });
         this.refreshRules();
         this.updateWidget();
-        this.updateView();
 
         this.listenTo(this.addRuleButton, 'click', this.addRule);
         this.conditionManager.on('receiveTelemetry', this.executeRules, this);
@@ -197,43 +185,12 @@ define([
     };
 
     /**
-     * A callback function for the Open MCT status capability listener. If the
-     * view representing the domain object is in edit mode, update the internal
-     * state and widget view accordingly.
-     * @param {string[]} status an array containing the domain object's current status
-     */
-    SummaryWidget.prototype.onEdit = function (status) {
-        if (status && status.includes('editing')) {
-            this.editing = true;
-        } else {
-            this.editing = false;
-        }
-        this.updateView();
-    };
-
-    /**
-     * If this view is currently in edit mode, show all rule configuration interfaces.
-     * Otherwise, hide them.
-     */
-    SummaryWidget.prototype.updateView = function () {
-        if (this.editing) {
-            this.ruleArea.show();
-            this.testDataArea.show();
-            this.addRuleButton.show();
-        } else {
-            this.ruleArea.hide();
-            this.testDataArea.hide();
-            this.addRuleButton.hide();
-        }
-    };
-
-    /**
      * Update the view from the current rule configuration and order
      */
     SummaryWidget.prototype.refreshRules = function () {
-        var self = this,
-            ruleOrder = self.domainObject.configuration.ruleOrder,
-            rules = self.rulesById;
+        const self = this;
+        const ruleOrder = self.domainObject.configuration.ruleOrder;
+        const rules = self.rulesById;
         self.ruleArea.html('');
         Object.values(ruleOrder).forEach(function (ruleId) {
             self.ruleArea.append(rules[ruleId].getDOM());
@@ -244,8 +201,8 @@ define([
     };
 
     SummaryWidget.prototype.addOrRemoveDragIndicator = function () {
-        var rules = this.domainObject.configuration.ruleOrder;
-        var rulesById = this.rulesById;
+        const rules = this.domainObject.configuration.ruleOrder;
+        const rulesById = this.rulesById;
 
         rules.forEach(function (ruleKey, index, array) {
             if (array.length > 2 && index > 0) {
@@ -260,11 +217,12 @@ define([
      * Update the widget's appearance from the configuration of the active rule
      */
     SummaryWidget.prototype.updateWidget = function () {
-        var activeRule = this.rulesById[this.activeId];
+        const WIDGET_ICON_CLASS = 'c-sw__icon js-sw__icon';
+        const activeRule = this.rulesById[this.activeId];
         this.applyStyle($('#widget', this.domElement), activeRule.getProperty('style'));
         $('#widget', this.domElement).prop('title', activeRule.getProperty('message'));
         $('#widgetLabel', this.domElement).html(activeRule.getProperty('label'));
-        $('#widgetLabel', this.domElement).removeClass().addClass('label widget-label ' + activeRule.getProperty('icon'));
+        $('#widgetIcon', this.domElement).removeClass().addClass(WIDGET_ICON_CLASS + ' ' + activeRule.getProperty('icon'));
     };
 
     /**
@@ -282,9 +240,9 @@ define([
      * Add a new rule to this widget
      */
     SummaryWidget.prototype.addRule = function () {
-        var ruleCount = 0,
-            ruleId,
-            ruleOrder = this.domainObject.configuration.ruleOrder;
+        let ruleCount = 0;
+        let ruleId;
+        const ruleOrder = this.domainObject.configuration.ruleOrder;
 
         while (Object.keys(this.rulesById).includes('rule' + ruleCount)) {
             ruleCount++;
@@ -294,11 +252,10 @@ define([
         ruleOrder.push(ruleId);
         this.domainObject.configuration.ruleOrder = ruleOrder;
 
-        this.updateDomainObject();
         this.initRule(ruleId, 'Rule');
+        this.updateDomainObject();
         this.refreshRules();
     };
-
 
     /**
      * Duplicate an existing widget rule from its configuration and splice it in
@@ -307,11 +264,11 @@ define([
      *                              instantiated
      */
     SummaryWidget.prototype.duplicateRule = function (sourceConfig) {
-        var ruleCount = 0,
-            ruleId,
-            sourceRuleId = sourceConfig.id,
-            ruleOrder = this.domainObject.configuration.ruleOrder,
-            ruleIds = Object.keys(this.rulesById);
+        let ruleCount = 0;
+        let ruleId;
+        const sourceRuleId = sourceConfig.id;
+        const ruleOrder = this.domainObject.configuration.ruleOrder;
+        const ruleIds = Object.keys(this.rulesById);
 
         while (ruleIds.includes('rule' + ruleCount)) {
             ruleCount = ++ruleCount;
@@ -323,8 +280,8 @@ define([
         ruleOrder.splice(ruleOrder.indexOf(sourceRuleId) + 1, 0, ruleId);
         this.domainObject.configuration.ruleOrder = ruleOrder;
         this.domainObject.configuration.ruleConfigById[ruleId] = sourceConfig;
-        this.updateDomainObject();
         this.initRule(ruleId, sourceConfig.name);
+        this.updateDomainObject();
         this.refreshRules();
     };
 
@@ -336,8 +293,8 @@ define([
      * @param {string} ruleName The initial human-readable name of this rule
      */
     SummaryWidget.prototype.initRule = function (ruleId, ruleName) {
-        var ruleConfig,
-            styleObj = {};
+        let ruleConfig;
+        const styleObj = {};
 
         Object.assign(styleObj, DEFAULT_PROPS);
         if (!this.domainObject.configuration.ruleConfigById[ruleId]) {
@@ -361,9 +318,10 @@ define([
             };
 
         }
+
         ruleConfig = this.domainObject.configuration.ruleConfigById[ruleId];
         this.rulesById[ruleId] = new Rule(ruleConfig, this.domainObject, this.openmct,
-                                          this.conditionManager, this.widgetDnD, this.container);
+            this.conditionManager, this.widgetDnD, this.container);
         this.rulesById[ruleId].on('remove', this.refreshRules, this);
         this.rulesById[ruleId].on('duplicate', this.duplicateRule, this);
         this.rulesById[ruleId].on('change', this.updateWidget, this);
@@ -377,9 +335,9 @@ define([
      *                       and dropTarget fields
      */
     SummaryWidget.prototype.reorder = function (event) {
-        var ruleOrder = this.domainObject.configuration.ruleOrder,
-            sourceIndex = ruleOrder.indexOf(event.draggingId),
-            targetIndex;
+        const ruleOrder = this.domainObject.configuration.ruleOrder;
+        const sourceIndex = ruleOrder.indexOf(event.draggingId);
+        let targetIndex;
 
         if (event.draggingId !== event.dropTarget) {
             ruleOrder.splice(sourceIndex, 1);
@@ -388,6 +346,7 @@ define([
             this.domainObject.configuration.ruleOrder = ruleOrder;
             this.updateDomainObject();
         }
+
         this.refreshRules();
     };
 

@@ -46,25 +46,34 @@ define([
                 spyOn(provider, 'cleanTerm').and.returnValue('cleanedTerm');
                 spyOn(provider, 'fuzzyMatchUnquotedTerms').and.returnValue('fuzzy');
                 spyOn(provider, 'parseResponse').and.returnValue('parsedResponse');
-                $http.and.returnValue(Promise.resolve({}));
+                $http.and.returnValue(Promise.resolve({
+                    data: {
+                        hits: {
+                            hits: []
+                        }
+                    }
+                }));
             });
 
             it('cleans terms and adds fuzzyness', function () {
-                provider.query('hello', 10);
-                expect(provider.cleanTerm).toHaveBeenCalledWith('hello');
-                expect(provider.fuzzyMatchUnquotedTerms)
-                    .toHaveBeenCalledWith('cleanedTerm');
+                return provider.query('hello', 10)
+                    .then(() => {
+                        expect(provider.cleanTerm).toHaveBeenCalledWith('hello');
+                        expect(provider.fuzzyMatchUnquotedTerms)
+                            .toHaveBeenCalledWith('cleanedTerm');
+                    });
             });
 
             it('calls through to $http', function () {
-                provider.query('hello', 10);
-                expect($http).toHaveBeenCalledWith({
-                    method: 'GET',
-                    params: {
-                        q: 'fuzzy',
-                        size: 10
-                    },
-                    url: 'http://localhost:9200/_search/'
+                return provider.query('hello', 10).then(() => {
+                    expect($http).toHaveBeenCalledWith({
+                        method: 'GET',
+                        params: {
+                            q: 'fuzzy',
+                            size: 10
+                        },
+                        url: 'http://localhost:9200/_search/'
+                    });
                 });
             });
 
@@ -106,32 +115,32 @@ define([
                 .toBe('pwr~ dvc~ 43~');
 
             expect(provider.fuzzyMatchUnquotedTerms(
-                    'hello welcome "to quoted village" have fun'
-                )).toBe(
-                    'hello~ welcome~ "to quoted village" have~ fun~'
-                );
+                'hello welcome "to quoted village" have fun'
+            )).toBe(
+                'hello~ welcome~ "to quoted village" have~ fun~'
+            );
         });
 
         it('can parse responses', function () {
             var elasticSearchResponse = {
-                    data: {
-                        hits: {
-                            total: 2,
-                            hits: [
-                                {
-                                    '_id': 'hit1Id',
-                                    '_source': 'hit1Model',
-                                    '_score': 0.56
-                                },
-                                {
-                                    '_id': 'hit2Id',
-                                    '_source': 'hit2Model',
-                                    '_score': 0.34
-                                }
-                            ]
-                        }
+                data: {
+                    hits: {
+                        total: 2,
+                        hits: [
+                            {
+                                '_id': 'hit1Id',
+                                '_source': 'hit1Model',
+                                '_score': 0.56
+                            },
+                            {
+                                '_id': 'hit2Id',
+                                '_source': 'hit2Model',
+                                '_score': 0.34
+                            }
+                        ]
                     }
-                };
+                }
+            };
 
             expect(provider.parseResponse(elasticSearchResponse))
                 .toEqual({

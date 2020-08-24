@@ -1,17 +1,17 @@
 define(['../src/Rule', 'zepto'], function (Rule, $) {
     describe('A Summary Widget Rule', function () {
-        var mockRuleConfig,
-            mockDomainObject,
-            mockOpenMCT,
-            mockConditionManager,
-            mockWidgetDnD,
-            mockEvaluator,
-            mockContainer,
-            testRule,
-            removeSpy,
-            duplicateSpy,
-            changeSpy,
-            conditionChangeSpy;
+        let mockRuleConfig;
+        let mockDomainObject;
+        let mockOpenMCT;
+        let mockConditionManager;
+        let mockWidgetDnD;
+        let mockEvaluator;
+        let mockContainer;
+        let testRule;
+        let removeSpy;
+        let duplicateSpy;
+        let changeSpy;
+        let conditionChangeSpy;
 
         beforeEach(function () {
             mockRuleConfig = {
@@ -29,7 +29,7 @@ define(['../src/Rule', 'zepto'], function (Rule, $) {
                     key: '',
                     operation: '',
                     values: []
-                },{
+                }, {
                     object: 'blah',
                     key: 'blah',
                     operation: 'blah',
@@ -52,7 +52,7 @@ define(['../src/Rule', 'zepto'], function (Rule, $) {
 
             mockEvaluator = {};
             mockEvaluator.getOperationDescription = jasmine.createSpy('evaluator')
-                                                        .and.returnValue('Operation Description');
+                .and.returnValue('Operation Description');
 
             mockConditionManager = jasmine.createSpyObj('mockConditionManager', [
                 'on',
@@ -86,7 +86,7 @@ define(['../src/Rule', 'zepto'], function (Rule, $) {
             conditionChangeSpy = jasmine.createSpy('conditionChangeCallback');
 
             testRule = new Rule(mockRuleConfig, mockDomainObject, mockOpenMCT, mockConditionManager,
-                                mockWidgetDnD);
+                mockWidgetDnD);
             testRule.on('remove', removeSpy);
             testRule.on('duplicate', duplicateSpy);
             testRule.on('change', changeSpy);
@@ -137,12 +137,12 @@ define(['../src/Rule', 'zepto'], function (Rule, $) {
                 key: '',
                 operation: '',
                 values: []
-            },{
+            }, {
                 object: 'blah',
                 key: 'blah',
                 operation: 'blah',
                 values: ['blah.', 'blah!', 'blah?']
-            },{
+            }, {
                 object: '',
                 key: '',
                 operation: '',
@@ -165,12 +165,12 @@ define(['../src/Rule', 'zepto'], function (Rule, $) {
                 key: '',
                 operation: '',
                 values: []
-            },{
+            }, {
                 object: 'object1',
                 key: 'key1',
                 operation: 'operation1',
                 values: [1, 2, 3]
-            },{
+            }, {
                 object: 'blah',
                 key: 'blah',
                 operation: 'blah',

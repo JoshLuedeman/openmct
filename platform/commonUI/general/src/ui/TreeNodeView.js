@@ -22,13 +22,13 @@
 
 define([
     'zepto',
-    'text!../../res/templates/tree/node.html',
+    '../../res/templates/tree/node.html',
     './ToggleView',
     './TreeLabelView'
 ], function ($, nodeTemplate, ToggleView, TreeLabelView) {
 
     function TreeNodeView(gestureService, subtreeFactory, selectFn, openmct) {
-        this.li = $('<li>');
+        this.li = $('<li class="c-tree__item-h">');
         this.openmct = openmct;
         this.statusClasses = [];
 
@@ -38,9 +38,10 @@ define([
                 if (!this.subtreeView) {
                     this.subtreeView = subtreeFactory();
                     this.subtreeView.model(this.activeObject);
-                    this.li.find('.tree-item-subtree').eq(0)
+                    this.li.find('.c-tree__item-subtree').eq(0)
                         .append($(this.subtreeView.elements()));
                 }
+
                 $(this.subtreeView.elements()).removeClass('hidden');
             } else if (this.subtreeView) {
                 $(this.subtreeView.elements()).addClass('hidden');
@@ -83,11 +84,11 @@ define([
         this.activeObject = domainObject;
         if (domainObject && domainObject.hasCapability('adapter')) {
             var obj = domainObject.useCapability('adapter');
-            var hasComposition =  this.openmct.composition.get(obj) !== undefined;
+            var hasComposition = this.openmct.composition.get(obj) !== undefined;
             if (hasComposition) {
-                $(this.toggleView.elements()).removeClass('no-children');
+                $(this.toggleView.elements()).addClass('is-enabled');
             } else {
-                $(this.toggleView.elements()).addClass('no-children');
+                $(this.toggleView.elements()).removeClass('is-enabled');
             }
         }
 
@@ -120,23 +121,23 @@ define([
             selectedIdPath = getIdPath(domainObject);
 
         if (this.onSelectionPath) {
-            this.li.find('.tree-item').eq(0).removeClass('selected');
+            this.li.find('.js-tree__item').eq(0).removeClass('is-selected');
             if (this.subtreeView) {
                 this.subtreeView.value(undefined);
             }
         }
 
         this.onSelectionPath =
-            !!domainObject &&
-            !!this.activeObject &&
-            (activeIdPath.length <= selectedIdPath.length) &&
-                activeIdPath.every(function (id, index) {
+            Boolean(domainObject)
+            && Boolean(this.activeObject)
+            && (activeIdPath.length <= selectedIdPath.length)
+                && activeIdPath.every(function (id, index) {
                     return selectedIdPath[index] === id;
                 });
 
         if (this.onSelectionPath) {
             if (activeIdPath.length === selectedIdPath.length) {
-                this.li.find('.tree-item').eq(0).addClass('selected');
+                this.li.find('.js-tree__item').eq(0).addClass('is-selected');
             } else {
                 // Expand to reveal the selection
                 this.toggleView.value(true);

@@ -23,7 +23,7 @@
 define(
     ["../src/ComposeActionPolicy"],
     function (ComposeActionPolicy) {
-        describe("The compose action policy", function () {
+        xdescribe("The compose action policy", function () {
             var mockInjector,
                 mockPolicyService,
                 mockTypes,
@@ -41,6 +41,7 @@ define(
                 mockTypes = ['a', 'b'].map(function (type) {
                     var mockType = jasmine.createSpyObj('type-' + type, ['getKey']);
                     mockType.getKey.and.returnValue(type);
+
                     return mockType;
                 });
                 mockDomainObjects = ['a', 'b'].map(function (id, index) {
@@ -52,6 +53,7 @@ define(
                     mockDomainObject.getCapability.and.callFake(function (c) {
                         return c === 'type' && mockTypes[index];
                     });
+
                     return mockDomainObject;
                 });
                 mockAction = jasmine.createSpyObj('action', ['getMetadata']);

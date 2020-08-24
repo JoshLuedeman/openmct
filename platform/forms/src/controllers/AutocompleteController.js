@@ -33,10 +33,10 @@ define(
         function AutocompleteController($scope, $element) {
 
             var key = {
-                        down: 40,
-                        up: 38,
-                        enter: 13
-                    },
+                    down: 40,
+                    up: 38,
+                    enter: 13
+                },
                 autocompleteInputElement = $element[0].getElementsByClassName('autocompleteInput')[0];
 
             if ($scope.options[0].name) {
@@ -59,6 +59,7 @@ define(
                 if ($scope.optionIndex === 0) {
                     $scope.optionIndex = $scope.filteredOptions.length;
                 }
+
                 $scope.optionIndex--;
                 fillInputWithIndexedOption();
             }
@@ -67,6 +68,7 @@ define(
                 if ($scope.optionIndex === $scope.filteredOptions.length - 1) {
                     $scope.optionIndex = -1;
                 }
+
                 $scope.optionIndex++;
                 fillInputWithIndexedOption();
             }
@@ -86,17 +88,17 @@ define(
                 if ($scope.filteredOptions) {
                     var keyCode = $event.keyCode;
                     switch (keyCode) {
-                        case key.down:
-                            incrementOptionIndex();
-                            break;
-                        case key.up:
-                            $event.preventDefault();    // Prevents cursor jumping back and forth
-                            decrementOptionIndex();
-                            break;
-                        case key.enter:
-                            if ($scope.filteredOptions[$scope.optionIndex]) {
-                                fillInputWithString($scope.filteredOptions[$scope.optionIndex].name);
-                            }
+                    case key.down:
+                        incrementOptionIndex();
+                        break;
+                    case key.up:
+                        $event.preventDefault(); // Prevents cursor jumping back and forth
+                        decrementOptionIndex();
+                        break;
+                    case key.enter:
+                        if ($scope.filteredOptions[$scope.optionIndex]) {
+                            fillInputWithString($scope.filteredOptions[$scope.optionIndex].name);
+                        }
                     }
                 }
             };

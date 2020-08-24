@@ -20,7 +20,6 @@
  * at runtime from the About dialog for additional information.
  *****************************************************************************/
 
-
 define(
     function () {
         /**
@@ -31,8 +30,8 @@ define(
          * @memberof platform/entanglement
          * @implements {platform/entanglement.AbstractComposeService}
          */
-        function MoveService(policyService, linkService) {
-            this.policyService = policyService;
+        function MoveService(openmct, linkService) {
+            this.openmct = openmct;
             this.linkService = linkService;
         }
 
@@ -44,19 +43,22 @@ define(
             if (!parentCandidate || !parentCandidate.getId) {
                 return false;
             }
+
             if (parentCandidate.getId() === currentParent.getId()) {
                 return false;
             }
+
             if (parentCandidate.getId() === object.getId()) {
                 return false;
             }
+
             if (parentCandidate.getModel().composition.indexOf(object.getId()) !== -1) {
                 return false;
             }
-            return this.policyService.allow(
-                "composition",
-                parentCandidate,
-                object
+
+            return this.openmct.composition.checkPolicy(
+                parentCandidate.useCapability('adapter'),
+                object.useCapability('adapter')
             );
         };
 
@@ -67,8 +69,8 @@ define(
                     oldLocationCapability = object
                         .getCapability('location');
 
-                if (!newLocationCapability ||
-                        !oldLocationCapability) {
+                if (!newLocationCapability
+                        || !oldLocationCapability) {
                     return;
                 }
 

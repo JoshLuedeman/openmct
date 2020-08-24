@@ -53,16 +53,18 @@ define([
 
         it("sets navigation if it is allowed", function () {
             mockNavigationService.shouldNavigate.and.returnValue(true);
+
             return action.perform()
                 .then(function () {
                     expect(mockNavigationService.setNavigation)
-                    .toHaveBeenCalledWith(mockDomainObject, true);
+                        .toHaveBeenCalledWith(mockDomainObject, true);
                 });
         });
 
         it("does not set navigation if it is not allowed", function () {
             mockNavigationService.shouldNavigate.and.returnValue(false);
             var onSuccess = jasmine.createSpy('onSuccess');
+
             return action.perform()
                 .then(onSuccess, function () {
                     expect(onSuccess).not.toHaveBeenCalled();

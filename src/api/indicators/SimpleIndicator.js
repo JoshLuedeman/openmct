@@ -20,19 +20,19 @@
  * at runtime from the About dialog for additional information.
  *****************************************************************************/
 
-define(['zepto', 'text!./res/indicator-template.html'],
+define(['zepto', './res/indicator-template.html'],
     function ($, indicatorTemplate) {
-        var DEFAULT_ICON_CLASS = 'icon-info';
+        const DEFAULT_ICON_CLASS = 'icon-info';
 
         function SimpleIndicator(openmct) {
             this.openmct = openmct;
             this.element = $(indicatorTemplate)[0];
 
-            this.textElement = this.element.querySelector('.indicator-text');
+            this.textElement = this.element.querySelector('.js-indicator-text');
 
             //Set defaults
             this.text('New Indicator');
-            this.description('A simple indicator');
+            this.description('');
             this.iconClass(DEFAULT_ICON_CLASS);
             this.statusClass('');
         }
@@ -68,9 +68,11 @@ define(['zepto', 'text!./res/indicator-template.html'],
                 if (this.iconClassValue) {
                     this.element.classList.remove(this.iconClassValue);
                 }
+
                 if (iconClass) {
                     this.element.classList.add(iconClass);
                 }
+
                 this.iconClassValue = iconClass;
             }
 
@@ -82,9 +84,11 @@ define(['zepto', 'text!./res/indicator-template.html'],
                 if (this.statusClassValue) {
                     this.element.classList.remove(this.statusClassValue);
                 }
+
                 if (statusClass) {
                     this.element.classList.add(statusClass);
                 }
+
                 this.statusClassValue = statusClass;
             }
 

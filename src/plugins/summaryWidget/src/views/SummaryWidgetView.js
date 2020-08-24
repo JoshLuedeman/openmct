@@ -1,8 +1,10 @@
 define([
-    'text!./summary-widget.html'
+    './summary-widget.html'
 ], function (
     summaryWidgetTemplate
 ) {
+    const WIDGET_ICON_CLASS = 'c-sw__icon js-sw__icon';
+
     function SummaryWidgetView(domainObject, openmct) {
         this.openmct = openmct;
         this.domainObject = domainObject;
@@ -18,19 +20,20 @@ define([
         this.widget.title = datum.message;
         this.label.title = datum.message;
         this.label.innerHTML = datum.ruleLabel;
-        this.label.className = 'label widget-label ' + datum.icon;
+        this.icon.className = WIDGET_ICON_CLASS + ' ' + datum.icon;
     };
 
     SummaryWidgetView.prototype.render = function () {
         if (this.unsubscribe) {
             this.unsubscribe();
         }
+
         this.hasUpdated = false;
 
         this.container.innerHTML = summaryWidgetTemplate;
         this.widget = this.container.querySelector('a');
-        this.label = this.container.querySelector('.widget-label');
-
+        this.icon = this.container.querySelector('#widgetIcon');
+        this.label = this.container.querySelector('.js-sw__label');
 
         if (this.domainObject.url) {
             this.widget.setAttribute('href', this.domainObject.url);
@@ -43,15 +46,20 @@ define([
         } else {
             this.widget.removeAttribute('target');
         }
-        var renderTracker = {};
+
+        const renderTracker = {};
         this.renderTracker = renderTracker;
         this.openmct.telemetry.request(this.domainObject, {
             strategy: 'latest',
             size: 1
         }).then(function (results) {
-            if (this.destroyed || this.hasUpdated || this.renderTracker !== renderTracker) {
+            if (this.destroyed
+                || this.hasUpdated
+                || this.renderTracker !== renderTracker
+                || results.length === 0) {
                 return;
             }
+
             this.updateState(results[results.length - 1]);
         }.bind(this));
 

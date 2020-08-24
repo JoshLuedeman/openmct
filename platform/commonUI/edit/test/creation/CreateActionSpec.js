@@ -27,14 +27,13 @@ define(
     ["../../src/creation/CreateAction"],
     function (CreateAction) {
 
-        describe("The create action", function () {
+        xdescribe("The create action", function () {
             var mockType,
                 mockParent,
                 mockContext,
                 mockDomainObject,
                 capabilities = {},
                 mockEditAction,
-                mockSaveAction,
                 action;
 
             function mockPromise(value) {
@@ -78,17 +77,11 @@ define(
                     ]
                 );
                 mockDomainObject.hasCapability.and.callFake(function (name) {
-                    return !!capabilities[name];
+                    return Boolean(capabilities[name]);
                 });
                 mockDomainObject.getCapability.and.callFake(function (name) {
                     return capabilities[name];
                 });
-                mockSaveAction = jasmine.createSpyObj(
-                    "saveAction",
-                    [
-                        "perform"
-                    ]
-                );
 
                 capabilities.action = jasmine.createSpyObj(
                     "actionCapability",
@@ -157,8 +150,8 @@ define(
                     expect(mockEditAction.perform).toHaveBeenCalled();
                 });
 
-                it("uses the save-as action if object does not have an edit action" +
-                    " available", function () {
+                it("uses the save-as action if object does not have an edit action"
+                    + " available", function () {
                     capabilities.action.getActions.and.returnValue([]);
                     capabilities.action.perform.and.returnValue(mockPromise(undefined));
                     capabilities.editor.save.and.returnValue(promise);

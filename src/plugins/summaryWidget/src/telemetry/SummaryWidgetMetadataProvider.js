@@ -38,7 +38,7 @@ define([
         return this.openmct.time.getAllTimeSystems().map(function (ts, i) {
             return {
                 key: ts.key,
-                name: 'UTC',
+                name: ts.name,
                 format: ts.timeFormat,
                 hints: {
                     domain: i
@@ -48,10 +48,10 @@ define([
     };
 
     SummaryWidgetMetadataProvider.prototype.getMetadata = function (domainObject) {
-        var ruleOrder = domainObject.configuration.ruleOrder || [];
-        var enumerations = ruleOrder
+        const ruleOrder = domainObject.configuration.ruleOrder || [];
+        const enumerations = ruleOrder
             .filter(function (ruleId) {
-                return !!domainObject.configuration.ruleConfigById[ruleId];
+                return Boolean(domainObject.configuration.ruleConfigById[ruleId]);
             })
             .map(function (ruleId, ruleIndex) {
                 return {
@@ -60,11 +60,11 @@ define([
                 };
             });
 
-        var metadata = {
+        const metadata = {
             // Generally safe assumption is that we have one domain per timeSystem.
             values: this.getDomains().concat([
                 {
-                    name: 'state',
+                    name: 'State',
                     key: 'state',
                     source: 'ruleIndex',
                     format: 'enum',

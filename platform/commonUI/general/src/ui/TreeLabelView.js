@@ -22,7 +22,7 @@
 
 define([
     'zepto',
-    'text!../../res/templates/tree/tree-label.html'
+    '../../res/templates/tree/tree-label.html'
 ], function ($, labelTemplate) {
 
     function TreeLabelView(gestureService) {
@@ -32,11 +32,13 @@ define([
 
     function isLink(domainObject) {
         var location = domainObject.getCapability('location');
+
         return location.isLink();
     }
 
     function getClass(domainObject) {
         var type = domainObject.getCapability('type');
+
         return type.getCssClass();
     }
 

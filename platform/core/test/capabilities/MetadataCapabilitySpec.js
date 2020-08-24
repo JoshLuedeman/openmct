@@ -55,11 +55,12 @@ define(
                 );
                 mockProperties = ['a', 'b', 'c'].map(function (k) {
                     var mockProperty = jasmine.createSpyObj(
-                            'property-' + k,
-                            ['getValue', 'getDefinition']
-                        );
+                        'property-' + k,
+                        ['getValue', 'getDefinition']
+                    );
                     mockProperty.getValue.and.returnValue("Value " + k);
                     mockProperty.getDefinition.and.returnValue({ name: "Property " + k});
+
                     return mockProperty;
                 });
                 testModel = { name: "" };

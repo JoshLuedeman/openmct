@@ -44,6 +44,7 @@ define(function () {
     function SearchController($scope, searchService) {
         var controller = this;
         this.$scope = $scope;
+        this.$scope.ngModel = this.$scope.ngModel || {};
         this.searchService = searchService;
         this.numberToDisplay = this.RESULTS_PER_PAGE;
         this.availabileResults = 0;
@@ -89,6 +90,7 @@ define(function () {
             this.pendingQuery = undefined;
             this.$scope.ngModel.search = false;
             this.$scope.loading = false;
+
             return;
         }
 
@@ -119,6 +121,7 @@ define(function () {
                 if (controller.pendingQuery !== queryId) {
                     return; // another query in progress, so skip this one.
                 }
+
                 controller.onSearchComplete(results);
             });
     };
@@ -144,9 +147,11 @@ define(function () {
                 return true;
             };
         }
+
         var includeTypes = this.$scope.ngModel.checked;
+
         return function (model) {
-            return !!includeTypes[model.type];
+            return Boolean(includeTypes[model.type]);
         };
     };
 
@@ -160,7 +165,6 @@ define(function () {
         this.availableResults = 0;
         this.numberToDisplay = this.RESULTS_PER_PAGE;
     };
-
 
     /**
      * Update search results from given `results`.

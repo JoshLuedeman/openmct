@@ -24,7 +24,7 @@ define(
     ["../src/MCTFileInput"],
     function (MCTFileInput) {
 
-        describe("The mct-file-input directive", function () {
+        xdescribe("The mct-file-input directive", function () {
 
             var mockScope,
                 mockFileInputService,
@@ -41,19 +41,22 @@ define(
                     ['getInput']
                 );
                 mockScope = jasmine.createSpyObj(
-                        '$scope',
-                        ['$watch']
+                    '$scope',
+                    ['$watch']
                 );
 
                 mockScope.structure = {text: 'Select File'};
                 mockScope.field = "file-input";
-                mockScope.ngModel = {"file-input" : undefined};
+                mockScope.ngModel = {"file-input": undefined};
 
                 element.on.and.callFake(function (event, clickHandler) {
                     clickHandler();
                 });
                 mockFileInputService.getInput.and.returnValue(
-                    Promise.resolve({name: "file-name", body: "file-body"})
+                    Promise.resolve({
+                        name: "file-name",
+                        body: "file-body"
+                    })
                 );
 
                 mctFileInput = new MCTFileInput(mockFileInputService);

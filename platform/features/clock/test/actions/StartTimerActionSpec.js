@@ -33,10 +33,10 @@ define(
 
             function asPromise(value) {
                 return (value || {}).then ? value : {
-                        then: function (callback) {
-                            return asPromise(callback(value));
-                        }
-                    };
+                    then: function (callback) {
+                        return asPromise(callback(value));
+                    }
+                };
             }
 
             function testState(type, timerState, timestamp, expected) {
@@ -61,6 +61,7 @@ define(
                 mockDomainObject.useCapability.and.callFake(function (c, v) {
                     if (c === 'mutation') {
                         testModel = v(testModel) || testModel;
+
                         return asPromise(true);
                     }
                 });

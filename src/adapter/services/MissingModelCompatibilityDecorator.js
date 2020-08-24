@@ -21,7 +21,7 @@
  *****************************************************************************/
 
 define([
-    '../../api/objects/object-utils'
+    'objectUtils'
 ], function (
     objectUtils
 ) {
@@ -46,22 +46,24 @@ define([
      * models.  If a model is requested twice, respond with a missing result.
      */
     MissingModelCompatibilityDecorator.prototype.apiFetch = function (ids) {
-        var results = {},
-            promises = ids.map(function (id) {
-                if (this.apiFetching[id]) {
-                    return Promise.resolve();
-                }
-                this.apiFetching[id] = true;
+        const results = {};
 
-                return this.api.objects.get(objectUtils.parseKeyString(id))
-                    .then(function (newDO) {
-                        results[id] = objectUtils.toOldFormat(newDO);
-                    });
-            }, this);
+        const promises = ids.map(function (id) {
+            if (this.apiFetching[id]) {
+                return Promise.resolve();
+            }
+
+            this.apiFetching[id] = true;
+
+            return this.api.objects.get(objectUtils.parseKeyString(id))
+                .then(function (newDO) {
+                    results[id] = objectUtils.toOldFormat(newDO);
+                });
+        }, this);
 
         return Promise.all(promises).then(function () {
-                return results;
-            });
+            return results;
+        });
     };
 
     /**
@@ -71,9 +73,9 @@ define([
     MissingModelCompatibilityDecorator.prototype.getModels = function (ids) {
         return this.modelService.getModels(ids)
             .then(function (models) {
-                var missingIds = ids.filter(function (id) {
-                        return !models[id];
-                    });
+                const missingIds = ids.filter(function (id) {
+                    return !models[id];
+                });
 
                 if (!missingIds.length) {
                     return models;
@@ -84,6 +86,7 @@ define([
                         Object.keys(apiResults).forEach(function (k) {
                             models[k] = apiResults[k];
                         });
+
                         return models;
                     });
             }.bind(this));

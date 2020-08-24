@@ -44,9 +44,9 @@ define(
                     min = $scope.datetime.min,
                     sec = $scope.datetime.sec,
                     fullDateTime = moment.utc(date, DATE_FORMAT)
-                            .hour(hour || 0)
-                            .minute(min || 0)
-                            .second(sec || 0);
+                        .hour(hour || 0)
+                        .minute(min || 0)
+                        .second(sec || 0);
 
                 if (fullDateTime.isValid()) {
                     $scope.ngModel[$scope.field] = fullDateTime.valueOf();
@@ -96,8 +96,8 @@ define(
 
             // Initialize forms values
             updateDateTime(
-                ($scope.ngModel && $scope.field) ?
-                        $scope.ngModel[$scope.field] : undefined
+                ($scope.ngModel && $scope.field)
+                    ? $scope.ngModel[$scope.field] : undefined
             );
         }
 

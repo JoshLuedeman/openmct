@@ -20,7 +20,6 @@
  * at runtime from the About dialog for additional information.
  *****************************************************************************/
 
-
 define(
     [
         '../../src/services/LinkService',
@@ -29,7 +28,7 @@ define(
     ],
     function (LinkService, domainObjectFactory, ControlledPromise) {
 
-        describe("LinkService", function () {
+        xdescribe("LinkService", function () {
 
             var linkService,
                 mockPolicyService;
@@ -161,6 +160,7 @@ define(
                             mutation: {
                                 invoke: function (mutator) {
                                     mutator(parentModel);
+
                                     return new ControlledPromise();
                                 }
                             },
@@ -179,7 +179,6 @@ define(
                     });
 
                 });
-
 
                 it("adds to the parent's composition", function () {
                     expect(compositionCapability.add).not.toHaveBeenCalled();

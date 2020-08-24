@@ -32,7 +32,7 @@ define(
         var CONNECTED = {
                 text: "Connected",
                 glyphClass: "ok",
-                statusClass: "s-status-ok",
+                statusClass: "s-status-on",
                 description: "Connected to the domain object database."
             },
             DISCONNECTED = {
@@ -84,14 +84,17 @@ define(
         }
 
         ElasticIndicator.prototype.getCssClass = function () {
-            return "icon-database";
+            return "c-indicator--clickable icon-suitcase";
         };
+
         ElasticIndicator.prototype.getGlyphClass = function () {
             return this.state.glyphClass;
         };
+
         ElasticIndicator.prototype.getText = function () {
             return this.state.text;
         };
+
         ElasticIndicator.prototype.getDescription = function () {
             return this.state.description;
         };

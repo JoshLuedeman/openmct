@@ -1,12 +1,12 @@
 define([
-      './Palette',
-      'zepto'
+    './Palette',
+    'zepto'
 ], function (
     Palette,
     $
 ) {
     //The icons that will be used to instantiate this palette if none are provided
-    var DEFAULT_ICONS = [
+    const DEFAULT_ICONS = [
         'icon-alert-rect',
         'icon-alert-triangle',
         'icon-arrow-down',
@@ -48,15 +48,16 @@ define([
         this.palette.setNullOption(' ');
         this.oldIcon = this.palette.current || ' ';
 
-        var domElement = $(this.palette.getDOM()),
-            self = this;
+        const domElement = $(this.palette.getDOM());
+        const self = this;
 
-        $('.s-menu-button', domElement).addClass('t-icon-palette-menu-button');
+        $('.c-button--menu', domElement).addClass('c-button--swatched');
         $('.t-swatch', domElement).addClass('icon-swatch');
-        $('.l-palette', domElement).addClass('l-icon-palette');
+        $('.c-palette', domElement).addClass('c-palette--icon');
 
-        $('.s-palette-item', domElement).each(function () {
-            var elem = this;
+        $('.c-palette-item', domElement).each(function () {
+            // eslint-disable-next-line no-invalid-this
+            const elem = this;
             $(elem).addClass(elem.dataset.item);
         });
 

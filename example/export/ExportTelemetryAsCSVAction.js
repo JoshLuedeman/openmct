@@ -19,7 +19,6 @@
  * this source code distribution or the Licensing information page available
  * at runtime from the About dialog for additional information.
  *****************************************************************************/
-/*global define*/
 
 define([], function () {
     'use strict';
@@ -58,15 +57,15 @@ define([], function () {
                 row,
                 i;
 
-            function copyDomainsToRow(row, index) {
+            function copyDomainsToRow(telemetryRow, index) {
                 domains.forEach(function (domain) {
-                    row[domain.name] = series.getDomainValue(index, domain.key);
+                    telemetryRow[domain.name] = series.getDomainValue(index, domain.key);
                 });
             }
 
-            function copyRangesToRow(row, index) {
+            function copyRangesToRow(telemetryRow, index) {
                 ranges.forEach(function (range) {
-                    row[range.name] = series.getRangeValue(index, range.key);
+                    telemetryRow[range.name] = series.getRangeValue(index, range.key);
                 });
             }
 
@@ -76,13 +75,14 @@ define([], function () {
                 copyRangesToRow(row, i);
                 rows.push(row);
             }
+
             exportService.exportCSV(rows, { headers: headers });
         });
     };
 
     ExportTelemetryAsCSVAction.appliesTo = function (context) {
-        return context.domainObject &&
-            context.domainObject.hasCapability("telemetry");
+        return context.domainObject
+            && context.domainObject.hasCapability("telemetry");
     };
 
     return ExportTelemetryAsCSVAction;

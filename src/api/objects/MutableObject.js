@@ -21,11 +21,13 @@
  *****************************************************************************/
 
 define([
+    'objectUtils',
     'lodash'
 ], function (
+    utils,
     _
 ) {
-    var ANY_OBJECT_EVENT = "mutation";
+    const ANY_OBJECT_EVENT = "mutation";
 
     /**
      * The MutableObject wraps a DomainObject and provides getters and
@@ -41,7 +43,9 @@ define([
     }
 
     function qualifiedEventName(object, eventName) {
-        return [object.identifier.key, eventName].join(':');
+        const keystring = utils.makeKeyString(object.identifier);
+
+        return [keystring, eventName].join(':');
     }
 
     MutableObject.prototype.stopListening = function () {
@@ -60,8 +64,8 @@ define([
      * @memberof module:openmct.MutableObject#
      */
     MutableObject.prototype.on = function (path, callback) {
-        var fullPath = qualifiedEventName(this.object, path);
-        var eventOff =
+        const fullPath = qualifiedEventName(this.object, path);
+        const eventOff =
             this.eventEmitter.off.bind(this.eventEmitter, fullPath, callback);
 
         this.eventEmitter.on(fullPath, callback);
@@ -79,22 +83,19 @@ define([
         _.set(this.object, path, value);
         _.set(this.object, 'modified', Date.now());
 
-        var handleRecursiveMutation = function (newObject) {
+        const handleRecursiveMutation = function (newObject) {
             this.object = newObject;
         }.bind(this);
 
-        this.eventEmitter.on(qualifiedEventName(this.object, '*'), handleRecursiveMutation);
-
-        //Emit event specific to property
-        this.eventEmitter.emit(qualifiedEventName(this.object, path), value);
-
-        this.eventEmitter.off(qualifiedEventName(this.object, '*'), handleRecursiveMutation);
-
-        //Emit wildcare event
+        //Emit wildcard event
         this.eventEmitter.emit(qualifiedEventName(this.object, '*'), this.object);
-
         //Emit a general "any object" event
         this.eventEmitter.emit(ANY_OBJECT_EVENT, this.object);
+
+        this.eventEmitter.on(qualifiedEventName(this.object, '*'), handleRecursiveMutation);
+        //Emit event specific to property
+        this.eventEmitter.emit(qualifiedEventName(this.object, path), value);
+        this.eventEmitter.off(qualifiedEventName(this.object, '*'), handleRecursiveMutation);
     };
 
     return MutableObject;

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Open MCT, Copyright (c) 2014-2017, United States Government
+ * Open MCT, Copyright (c) 2014-2020, United States Government
  * as represented by the Administrator of the National Aeronautics and Space
  * Administration. All rights reserved.
  *
@@ -19,62 +19,62 @@
  * this source code distribution or the Licensing information page available
  * at runtime from the About dialog for additional information.
  *****************************************************************************/
-/*global define*/
 
 define([
-    "./src/EventTelemetryProvider",
-    'legacyRegistry'
+    "./src/EventTelemetryProvider"
 ], function (
-    EventTelemetryProvider,
-    legacyRegistry
+    EventTelemetryProvider
 ) {
     "use strict";
 
-    legacyRegistry.register("example/eventGenerator", {
-        "name": "Event Message Generator",
-        "description": "For development use. Creates sample event message data that mimics a live data stream.",
-        "extensions": {
-            "components": [
-                {
-                    "implementation": EventTelemetryProvider,
-                    "type": "provider",
-                    "provides": "telemetryService",
-                    "depends": [
-                        "$q",
-                        "$timeout"
-                    ]
-                }
-            ],
-            "types": [
-                {
-                    "key": "eventGenerator",
-                    "name": "Event Message Generator",
-                    "cssClass": "icon-folder-new",
-                    "description": "For development use. Creates sample event message data that mimics a live data stream.",
-                    "priority": 10,
-                    "features": "creation",
-                    "model": {
-                        "telemetry": {}
-                    },
-                    "telemetry": {
-                        "source": "eventGenerator",
-                        "domains": [
-                            {
-                                "key": "utc",
-                                "name": "Timestamp",
-                                "format": "utc"
-                            }
-                        ],
-                        "ranges": [
-                            {
-                                "key": "message",
-                                "name": "Message",
-                                "format": "string"
-                            }
+    return {
+        name: "example/eventGenerator",
+        definition: {
+            "name": "Event Message Generator",
+            "description": "For development use. Creates sample event message data that mimics a live data stream.",
+            "extensions": {
+                "components": [
+                    {
+                        "implementation": EventTelemetryProvider,
+                        "type": "provider",
+                        "provides": "telemetryService",
+                        "depends": [
+                            "$q",
+                            "$timeout"
                         ]
                     }
-                }
-            ]
+                ],
+                "types": [
+                    {
+                        "key": "eventGenerator",
+                        "name": "Event Message Generator",
+                        "cssClass": "icon-generator-events",
+                        "description": "For development use. Creates sample event message data that mimics a live data stream.",
+                        "priority": 10,
+                        "features": "creation",
+                        "model": {
+                            "telemetry": {}
+                        },
+                        "telemetry": {
+                            "source": "eventGenerator",
+                            "domains": [
+                                {
+                                    "key": "utc",
+                                    "name": "Timestamp",
+                                    "format": "utc"
+                                }
+                            ],
+                            "ranges": [
+                                {
+                                    "key": "message",
+                                    "name": "Message",
+                                    "format": "string"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
         }
-    });
+    };
 });

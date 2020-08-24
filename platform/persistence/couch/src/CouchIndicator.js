@@ -33,7 +33,7 @@ define(
         var CONNECTED = {
                 text: "Connected",
                 glyphClass: "ok",
-                statusClass: "s-status-ok",
+                statusClass: "s-status-on",
                 description: "Connected to the domain object database."
             },
             DISCONNECTED = {
@@ -76,7 +76,6 @@ define(
             this.path = path;
             this.interval = interval;
 
-
             // Callback if the HTTP request to Couch fails
             function handleError() {
                 self.state = DISCONNECTED;
@@ -100,7 +99,7 @@ define(
         }
 
         CouchIndicator.prototype.getCssClass = function () {
-            return "icon-database " + this.state.statusClass;
+            return "c-indicator--clickable icon-suitcase " + this.state.statusClass;
         };
 
         CouchIndicator.prototype.getGlyphClass = function () {

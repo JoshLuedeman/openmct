@@ -23,11 +23,11 @@
 define([
     'zepto',
     './TreeNodeView',
-    'text!../../res/templates/tree/wait-node.html'
+    '../../res/templates/tree/wait-node.html'
 ], function ($, TreeNodeView, spinnerTemplate) {
 
     function TreeView(gestureService, openmct, selectFn) {
-        this.ul = $('<ul class="tree"></ul>');
+        this.ul = $('<ul class="c-tree"></ul>');
         this.nodeViews = [];
         this.callbacks = [];
         this.selectFn = selectFn || this.value.bind(this);
@@ -121,6 +121,7 @@ define([
 
     TreeView.prototype.observe = function (callback) {
         this.callbacks.push(callback);
+
         return function () {
             this.callbacks = this.callbacks.filter(function (c) {
                 return c !== callback;
@@ -135,7 +136,6 @@ define([
     TreeView.prototype.elements = function () {
         return this.ul;
     };
-
 
     return TreeView;
 });

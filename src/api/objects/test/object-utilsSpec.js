@@ -1,13 +1,12 @@
 define([
-    '../object-utils'
+    'objectUtils'
 ], function (
     objectUtils
 ) {
     describe('objectUtils', function () {
 
-
         describe('keyString util', function () {
-            var EXPECTATIONS = {
+            const EXPECTATIONS = {
                 'ROOT': {
                     namespace: '',
                     key: 'ROOT'
@@ -41,20 +40,20 @@ define([
                 });
 
                 it('parses and re-encodes "' + keyString + '"', function () {
-                    var identifier = objectUtils.parseKeyString(keyString);
+                    const identifier = objectUtils.parseKeyString(keyString);
                     expect(objectUtils.makeKeyString(identifier))
                         .toEqual(keyString);
                 });
 
                 it('is idempotent for "' + keyString + '".', function () {
-                    var identifier = objectUtils.parseKeyString(keyString);
-                    var again = objectUtils.parseKeyString(identifier);
+                    const identifier = objectUtils.parseKeyString(keyString);
+                    let again = objectUtils.parseKeyString(identifier);
                     expect(identifier).toEqual(again);
                     again = objectUtils.parseKeyString(again);
                     again = objectUtils.parseKeyString(again);
                     expect(identifier).toEqual(again);
 
-                    var againKeyString = objectUtils.makeKeyString(again);
+                    let againKeyString = objectUtils.makeKeyString(again);
                     expect(againKeyString).toEqual(keyString);
                     againKeyString = objectUtils.makeKeyString(againKeyString);
                     againKeyString = objectUtils.makeKeyString(againKeyString);
@@ -68,8 +67,8 @@ define([
 
             it('translate ids', function () {
                 expect(objectUtils.toNewFormat({
-                        prop: 'someValue'
-                    }, 'objId'))
+                    prop: 'someValue'
+                }, 'objId'))
                     .toEqual({
                         prop: 'someValue',
                         identifier: {
@@ -81,12 +80,12 @@ define([
 
             it('translates composition', function () {
                 expect(objectUtils.toNewFormat({
-                        prop: 'someValue',
-                        composition: [
-                            'anotherObjectId',
-                            'scratch:anotherObjectId'
-                        ]
-                    }, 'objId'))
+                    prop: 'someValue',
+                    composition: [
+                        'anotherObjectId',
+                        'scratch:anotherObjectId'
+                    ]
+                }, 'objId'))
                     .toEqual({
                         prop: 'someValue',
                         composition: [
@@ -111,12 +110,12 @@ define([
 
             it('removes ids', function () {
                 expect(objectUtils.toOldFormat({
-                        prop: 'someValue',
-                        identifier: {
-                            namespace: '',
-                            key: 'objId'
-                        }
-                    }))
+                    prop: 'someValue',
+                    identifier: {
+                        namespace: '',
+                        key: 'objId'
+                    }
+                }))
                     .toEqual({
                         prop: 'someValue'
                     });
@@ -124,22 +123,22 @@ define([
 
             it('translates composition', function () {
                 expect(objectUtils.toOldFormat({
-                        prop: 'someValue',
-                        composition: [
-                            {
-                                namespace: '',
-                                key: 'anotherObjectId'
-                            },
-                            {
-                                namespace: 'scratch',
-                                key: 'anotherObjectId'
-                            }
-                        ],
-                        identifier: {
+                    prop: 'someValue',
+                    composition: [
+                        {
                             namespace: '',
-                            key: 'objId'
+                            key: 'anotherObjectId'
+                        },
+                        {
+                            namespace: 'scratch',
+                            key: 'anotherObjectId'
                         }
-                    }))
+                    ],
+                    identifier: {
+                        namespace: '',
+                        key: 'objId'
+                    }
+                }))
                     .toEqual({
                         prop: 'someValue',
                         composition: [

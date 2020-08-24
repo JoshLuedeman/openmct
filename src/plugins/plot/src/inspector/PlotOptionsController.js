@@ -23,13 +23,11 @@
 define([
     '../configuration/configStore',
     '../lib/eventHelpers',
-    '../../../../api/objects/object-utils',
-    'lodash'
+    'objectUtils'
 ], function (
     configStore,
     eventHelpers,
-    objectUtils,
-    _
+    objectUtils
 ) {
 
     function PlotOptionsController($scope, openmct, $timeout) {
@@ -49,18 +47,18 @@ define([
     };
 
     PlotOptionsController.prototype.destroy = function () {
-        configStore.untrack(this.configId);
         this.stopListening();
         this.unlisten();
     };
 
     PlotOptionsController.prototype.setUpScope = function () {
-        var config = configStore.get(this.configId);
+        const config = configStore.get(this.configId);
         if (!config) {
             this.$timeout(this.setUpScope.bind(this));
+
             return;
         }
-        configStore.track(this.configId);
+
         this.config = this.$scope.config = config;
         this.$scope.plotSeries = [];
 
@@ -70,13 +68,15 @@ define([
         this.listenTo(this.$scope, '$destroy', this.destroy, this);
         this.listenTo(config.series, 'add', this.addSeries, this);
         this.listenTo(config.series, 'remove', this.resetAllSeries, this);
+
         config.series.forEach(this.addSeries, this);
     };
 
     PlotOptionsController.prototype.addSeries = function (series, index) {
-        this.$scope.plotSeries[index] = series;
-        series.locateOldObject(this.$scope.domainObject);
-
+        this.$timeout(function () {
+            this.$scope.plotSeries[index] = series;
+            series.locateOldObject(this.$scope.domainObject);
+        }.bind(this));
     };
 
     PlotOptionsController.prototype.resetAllSeries = function (series, index) {

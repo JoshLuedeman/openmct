@@ -19,37 +19,37 @@
  * this source code distribution or the Licensing information page available
  * at runtime from the About dialog for additional information.
  *****************************************************************************/
-/*global define*/
 
 define([
     "./src/WatchIndicator",
-    "./src/DigestIndicator",
-    'legacyRegistry'
+    "./src/DigestIndicator"
 ], function (
     WatchIndicator,
-    DigestIndicator,
-    legacyRegistry
+    DigestIndicator
 ) {
     "use strict";
 
-    legacyRegistry.register("example/profiling", {
-        "extensions": {
-            "indicators": [
-                {
-                    "implementation": WatchIndicator,
-                    "depends": [
-                        "$interval",
-                        "$rootScope"
-                    ]
-                },
-                {
-                    "implementation": DigestIndicator,
-                    "depends": [
-                        "$interval",
-                        "$rootScope"
-                    ]
-                }
-            ]
+    return {
+        name: "example/profiling",
+        definition: {
+            "extensions": {
+                "indicators": [
+                    {
+                        "implementation": WatchIndicator,
+                        "depends": [
+                            "$interval",
+                            "$rootScope"
+                        ]
+                    },
+                    {
+                        "implementation": DigestIndicator,
+                        "depends": [
+                            "$interval",
+                            "$rootScope"
+                        ]
+                    }
+                ]
+            }
         }
-    });
+    };
 });

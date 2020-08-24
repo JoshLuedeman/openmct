@@ -1,6 +1,6 @@
 define([
     '../eventHelpers',
-    'text!../../res/input/paletteTemplate.html',
+    '../../res/input/paletteTemplate.html',
     'EventEmitter',
     'zepto'
 ], function (
@@ -22,7 +22,7 @@ define([
     function Palette(cssClass, container, items) {
         eventHelpers.extend(this);
 
-        var self = this;
+        const self = this;
 
         this.cssClass = cssClass;
         this.items = items;
@@ -30,33 +30,34 @@ define([
 
         this.domElement = $(paletteTemplate);
         this.itemElements = {
-            nullOption: $('.l-option-row .s-palette-item', this.domElement)
+            nullOption: $('.c-palette__item-none .c-palette__item', this.domElement)
         };
         this.eventEmitter = new EventEmitter();
         this.supportedCallbacks = ['change'];
         this.value = this.items[0];
         this.nullOption = ' ';
+        this.button = $('.js-button', this.domElement);
+        this.menu = $('.c-menu', this.domElement);
 
         this.hideMenu = this.hideMenu.bind(this);
 
-        self.domElement.addClass(this.cssClass);
+        self.button.addClass(this.cssClass);
         self.setNullOption(this.nullOption);
 
-        $('.l-palette-row', self.domElement).after('<div class = "l-palette-row"> </div>');
         self.items.forEach(function (item) {
-            var itemElement = $('<div class = "l-palette-item s-palette-item"' +
-                                ' data-item = ' + item + '> </div>');
-            $('.l-palette-row:last-of-type', self.domElement).append(itemElement);
+            const itemElement = $('<div class = "c-palette__item ' + item + '"'
+                                + ' data-item = ' + item + '></div>');
+            $('.c-palette__items', self.domElement).append(itemElement);
             self.itemElements[item] = itemElement;
         });
 
-        $('.menu', self.domElement).hide();
+        $('.c-menu', self.domElement).hide();
 
         this.listenTo($(document), 'click', this.hideMenu);
-        this.listenTo($('.l-click-area', self.domElement), 'click', function (event) {
+        this.listenTo($('.js-button', self.domElement), 'click', function (event) {
             event.stopPropagation();
-            $('.menu', self.container).hide();
-            $('.menu', self.domElement).show();
+            $('.c-menu', self.container).hide();
+            $('.c-menu', self.domElement).show();
         });
 
         /**
@@ -66,13 +67,13 @@ define([
          * @private
          */
         function handleItemClick(event) {
-            var elem = event.currentTarget,
-                item = elem.dataset.item;
+            const elem = event.currentTarget;
+            const item = elem.dataset.item;
             self.set(item);
-            $('.menu', self.domElement).hide();
+            $('.c-menu', self.domElement).hide();
         }
 
-        this.listenTo($('.s-palette-item', self.domElement), 'click', handleItemClick);
+        this.listenTo($('.c-palette__item', self.domElement), 'click', handleItemClick);
     }
 
     /**
@@ -90,7 +91,7 @@ define([
     };
 
     Palette.prototype.hideMenu = function () {
-        $('.menu', this.domElement).hide();
+        $('.c-menu', this.domElement).hide();
     };
 
     /**
@@ -123,7 +124,7 @@ define([
      * @param {string} item The key of the item to set as selected
      */
     Palette.prototype.set = function (item) {
-        var self = this;
+        const self = this;
         if (this.items.includes(item) || item === this.nullOption) {
             this.value = item;
             if (item === this.nullOption) {
@@ -132,6 +133,7 @@ define([
                 this.updateSelected(item);
             }
         }
+
         this.eventEmitter.emit('change', self.value);
     };
 
@@ -139,8 +141,8 @@ define([
      * Update the view assoicated with the currently selected item
      */
     Palette.prototype.updateSelected = function (item) {
-        $('.s-palette-item', this.domElement).removeClass('selected');
-        this.itemElements[item].addClass('selected');
+        $('.c-palette__item', this.domElement).removeClass('is-selected');
+        this.itemElements[item].addClass('is-selected');
         if (item === 'nullOption') {
             $('.t-swatch', this.domElement).addClass('no-selection');
         } else {
@@ -162,7 +164,7 @@ define([
      * Hides the 'no selection' option to be hidden in the view if it doesn't apply
      */
     Palette.prototype.toggleNullOption = function () {
-        $('.l-option-row', this.domElement).toggle();
+        $('.c-palette__item-none', this.domElement).toggle();
     };
 
     return Palette;

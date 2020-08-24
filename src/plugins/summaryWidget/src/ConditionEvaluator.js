@@ -24,7 +24,8 @@ define([], function () {
          */
         this.inputTypes = {
             number: 'number',
-            string: 'text'
+            string: 'text',
+            enum: 'select'
         };
 
         /**
@@ -34,7 +35,8 @@ define([], function () {
          */
         this.inputValidators = {
             number: this.validateNumberInput,
-            string: this.validateStringInput
+            string: this.validateStringInput,
+            enum: this.validateNumberInput
         };
 
         /**
@@ -201,7 +203,7 @@ define([], function () {
                     return typeof input[0] === 'undefined';
                 },
                 text: 'is undefined',
-                appliesTo: ['string', 'number'],
+                appliesTo: ['string', 'number', 'enum'],
                 inputCount: 0,
                 getDescription: function () {
                     return ' is undefined';
@@ -212,10 +214,32 @@ define([], function () {
                     return typeof input[0] !== 'undefined';
                 },
                 text: 'is defined',
-                appliesTo: ['string', 'number'],
+                appliesTo: ['string', 'number', 'enum'],
                 inputCount: 0,
                 getDescription: function () {
                     return ' is defined';
+                }
+            },
+            enumValueIs: {
+                operation: function (input) {
+                    return input[0] === input[1];
+                },
+                text: 'is',
+                appliesTo: ['enum'],
+                inputCount: 1,
+                getDescription: function (values) {
+                    return ' == ' + values[0];
+                }
+            },
+            enumValueIsNot: {
+                operation: function (input) {
+                    return input[0] !== input[1];
+                },
+                text: 'is not',
+                appliesTo: ['enum'],
+                inputCount: 1,
+                getDescription: function (values) {
+                    return ' != ' + values[0];
                 }
             }
         };
@@ -234,12 +258,12 @@ define([], function () {
      * @return {boolean} The boolean value of the conditions
      */
     ConditionEvaluator.prototype.execute = function (conditions, mode) {
-        var active = false,
-            conditionValue,
-            conditionDefined = false,
-            self = this,
-            firstRuleEvaluated = false,
-            compositionObjs = this.compositionObjs;
+        let active = false;
+        let conditionValue;
+        let conditionDefined = false;
+        const self = this;
+        let firstRuleEvaluated = false;
+        const compositionObjs = this.compositionObjs;
 
         if (mode === 'js') {
             active = this.executeJavaScriptCondition(conditions);
@@ -250,8 +274,8 @@ define([], function () {
                     conditionValue = false;
                     Object.keys(compositionObjs).forEach(function (objId) {
                         try {
-                            conditionValue = conditionValue ||
-                                self.executeCondition(objId, condition.key,
+                            conditionValue = conditionValue
+                                || self.executeCondition(objId, condition.key,
                                     condition.operation, condition.values);
                             conditionDefined = true;
                         } catch (e) {
@@ -262,8 +286,8 @@ define([], function () {
                     conditionValue = true;
                     Object.keys(compositionObjs).forEach(function (objId) {
                         try {
-                            conditionValue = conditionValue &&
-                                self.executeCondition(objId, condition.key,
+                            conditionValue = conditionValue
+                                && self.executeCondition(objId, condition.key,
                                     condition.operation, condition.values);
                             conditionDefined = true;
                         } catch (e) {
@@ -291,6 +315,7 @@ define([], function () {
                 }
             });
         }
+
         return active;
     };
 
@@ -303,20 +328,23 @@ define([], function () {
      * @return {boolean} The value of this condition
      */
     ConditionEvaluator.prototype.executeCondition = function (object, key, operation, values) {
-        var cache = (this.useTestCache ? this.testCache : this.subscriptionCache),
-            telemetryValue,
-            op,
-            input,
-            validator;
+        const cache = (this.useTestCache ? this.testCache : this.subscriptionCache);
+        let telemetryValue;
+        let op;
+        let input;
+        let validator;
 
         if (cache[object] && typeof cache[object][key] !== 'undefined') {
-            telemetryValue = [cache[object][key]];
+            let value = cache[object][key];
+            telemetryValue = [isNaN(Number(value)) ? value : Number(value)];
         }
+
         op = this.operations[operation] && this.operations[operation].operation;
         input = telemetryValue && telemetryValue.concat(values);
         validator = op && this.inputValidators[this.operations[operation].appliesTo[0]];
+
         if (op && input && validator) {
-            if (this.operations[operation].appliesTo.length === 2) {
+            if (this.operations[operation].appliesTo.length > 1) {
                 return (this.validateNumberInput(input) || this.validateStringInput(input)) && op(input);
             } else {
                 return validator(input) && op(input);
@@ -333,10 +361,11 @@ define([], function () {
      * @returns {boolean}
      */
     ConditionEvaluator.prototype.validateNumberInput = function (input) {
-        var valid = true;
+        let valid = true;
         input.forEach(function (value) {
             valid = valid && (typeof value === 'number');
         });
+
         return valid;
     };
 
@@ -347,10 +376,11 @@ define([], function () {
      * @returns {boolean}
      */
     ConditionEvaluator.prototype.validateStringInput = function (input) {
-        var valid = true;
+        let valid = true;
         input.forEach(function (value) {
             valid = valid && (typeof value === 'string');
         });
+
         return valid;
     };
 
@@ -372,7 +402,7 @@ define([], function () {
     };
 
     /**
-     * Returns true only of the given operation applies to a given type
+     * Returns true only if the given operation applies to a given type
      * @param {string} key The key of the operation
      * @param {string} type The value type to query
      * @returns {boolean} True if the condition applies, false otherwise
@@ -411,10 +441,11 @@ define([], function () {
      * @return {string} The key for an HTML5 input type
      */
     ConditionEvaluator.prototype.getInputType = function (key) {
-        var type;
+        let type;
         if (this.operations[key]) {
             type = this.operations[key].appliesTo[0];
         }
+
         if (this.inputTypes[type]) {
             return this.inputTypes[type];
         }

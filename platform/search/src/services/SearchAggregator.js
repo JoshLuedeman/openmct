@@ -106,9 +106,9 @@ define([
             .all(resultPromises)
             .then(function (providerResults) {
                 var modelResults = {
-                        hits: [],
-                        total: 0
-                    };
+                    hits: [],
+                    total: 0
+                };
 
                 providerResults.forEach(function (providerResult) {
                     modelResults.hits =
@@ -137,6 +137,7 @@ define([
                 return 0;
             }
         });
+
         return modelResults;
     };
 
@@ -148,6 +149,7 @@ define([
         if (!filter) {
             return modelResults;
         }
+
         var initialLength = modelResults.hits.length,
             finalLength,
             removedByFilter;
@@ -175,9 +177,12 @@ define([
             .filter(function alreadyInResults(hit) {
                 if (includedIds[hit.id]) {
                     modelResults.total -= 1;
+
                     return false;
                 }
+
                 includedIds[hit.id] = true;
+
                 return true;
             });
 

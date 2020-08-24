@@ -19,45 +19,45 @@
  * this source code distribution or the Licensing information page available
  * at runtime from the About dialog for additional information.
  *****************************************************************************/
-/*global define*/
 
 define([
-    "./src/ScratchPersistenceProvider",
-    'legacyRegistry'
+    "./src/ScratchPersistenceProvider"
 ], function (
-    ScratchPersistenceProvider,
-    legacyRegistry
+    ScratchPersistenceProvider
 ) {
     "use strict";
 
-    legacyRegistry.register("example/scratchpad", {
-        "extensions": {
-            "roots": [
-                {
-                    "id": "scratch:root"
-                }
-            ],
-            "models": [
-                {
-                    "id": "scratch:root",
-                    "model": {
-                        "type": "folder",
-                        "composition": [],
-                        "name": "Scratchpad"
-                    },
-                    "priority": "preferred"
-                }
-            ],
-            "components": [
-                {
-                    "provides": "persistenceService",
-                    "type": "provider",
-                    "implementation": ScratchPersistenceProvider,
-                    "depends": [
-                        "$q"
-                    ]
-                }
-            ]
+    return {
+        name: "example/scratchpad",
+        definition: {
+            "extensions": {
+                "roots": [
+                    {
+                        "id": "scratch:root"
+                    }
+                ],
+                "models": [
+                    {
+                        "id": "scratch:root",
+                        "model": {
+                            "type": "folder",
+                            "composition": [],
+                            "name": "Scratchpad"
+                        },
+                        "priority": "preferred"
+                    }
+                ],
+                "components": [
+                    {
+                        "provides": "persistenceService",
+                        "type": "provider",
+                        "implementation": ScratchPersistenceProvider,
+                        "depends": [
+                            "$q"
+                        ]
+                    }
+                ]
+            }
         }
-    });
+    };
 });

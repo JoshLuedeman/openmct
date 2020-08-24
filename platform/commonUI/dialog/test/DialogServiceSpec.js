@@ -59,8 +59,8 @@ define(
                     ["resolve", "reject"]
                 );
                 mockDocument = jasmine.createSpyObj(
-                  "$document",
-                  ["find"]
+                    "$document",
+                    ["find"]
                 );
                 mockBody = jasmine.createSpyObj('body', ['on', 'off']);
                 mockDocument.find.and.returnValue(mockBody);
@@ -129,8 +129,8 @@ define(
                 );
             });
 
-            it("invokes the overlay service with the correct parameters when" +
-                " a blocking dialog is requested", function () {
+            it("invokes the overlay service with the correct parameters when"
+                + " a blocking dialog is requested", function () {
                 var dialogModel = {};
                 expect(dialogService.showBlockingMessage(dialogModel)).not.toBe(false);
                 expect(mockOverlayService.createOverlay).toHaveBeenCalledWith(

@@ -40,6 +40,7 @@ define([], function () {
 
         function getParent(domainObject) {
             var context = domainObject.getCapability('context');
+
             return context.getParent();
         }
 
@@ -58,7 +59,7 @@ define([], function () {
 
         function checkNavigation() {
             var navigatedObject = navigationService.getNavigation();
-            if (navigatedObject.hasCapability('context')) {
+            if (navigatedObject && navigatedObject.hasCapability('context')) {
                 if (!navigatedObject.getCapability('editor').isEditContextRoot()) {
                     preventOrphanNavigation(navigatedObject);
                 }

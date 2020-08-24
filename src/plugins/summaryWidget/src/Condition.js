@@ -1,5 +1,5 @@
 define([
-    'text!../res/conditionTemplate.html',
+    '../res/conditionTemplate.html',
     './input/ObjectSelect',
     './input/KeySelect',
     './input/OperationSelect',
@@ -44,7 +44,7 @@ define([
         this.remove = this.remove.bind(this);
         this.duplicate = this.duplicate.bind(this);
 
-        var self = this;
+        const self = this;
 
         /**
          * Event handler for a change in one of this conditions' custom selects
@@ -56,6 +56,7 @@ define([
             if (property === 'operation') {
                 self.generateValueInputs(value);
             }
+
             self.eventEmitter.emit('change', {
                 value: value,
                 property: property,
@@ -69,17 +70,15 @@ define([
          * @private
          */
         function onValueInput(event) {
-            var elem = event.target,
-                value = (isNaN(elem.valueAsNumber) ? elem.value : elem.valueAsNumber),
-                inputIndex = self.valueInputs.indexOf(elem);
+            const elem = event.target;
+            const value = isNaN(Number(elem.value)) ? elem.value : Number(elem.value);
+            const inputIndex = self.valueInputs.indexOf(elem);
 
-            if (elem.tagName.toUpperCase() === 'INPUT') {
-                self.eventEmitter.emit('change', {
-                    value: value,
-                    property: 'values[' + inputIndex + ']',
-                    index: self.index
-                });
-            }
+            self.eventEmitter.emit('change', {
+                value: value,
+                property: 'values[' + inputIndex + ']',
+                index: self.index
+            });
         }
 
         this.listenTo(this.deleteButton, 'click', this.remove, this);
@@ -108,8 +107,7 @@ define([
         Object.values(this.selects).forEach(function (select) {
             $('.t-configuration', self.domElement).append(select.getDOM());
         });
-
-        this.listenTo($(this.domElement), 'input', onValueInput);
+        this.listenTo($('.t-value-inputs', this.domElement), 'input', onValueInput);
     }
 
     Condition.prototype.getDOM = function (container) {
@@ -158,7 +156,7 @@ define([
      * callbacks with the cloned configuration and this rule's index
      */
     Condition.prototype.duplicate = function () {
-        var sourceCondition = JSON.parse(JSON.stringify(this.config));
+        const sourceCondition = JSON.parse(JSON.stringify(this.config));
         this.eventEmitter.emit('duplicate', {
             sourceCondition: sourceCondition,
             index: this.index
@@ -167,33 +165,62 @@ define([
 
     /**
      * When an operation is selected, create the appropriate value inputs
-     * and add them to the view
+     * and add them to the view. If an operation is of type enum, create
+     * a drop-down menu instead.
+     *
      * @param {string} operation The key of currently selected operation
      */
     Condition.prototype.generateValueInputs = function (operation) {
-        var evaluator = this.conditionManager.getEvaluator(),
-            inputArea = $('.t-value-inputs', this.domElement),
-            inputCount,
-            inputType,
-            newInput,
-            index = 0;
+        const evaluator = this.conditionManager.getEvaluator();
+        const inputArea = $('.t-value-inputs', this.domElement);
+        let inputCount;
+        let inputType;
+        let newInput;
+        let index = 0;
+        let emitChange = false;
 
         inputArea.html('');
         this.valueInputs = [];
+        this.config.values = this.config.values || [];
 
         if (evaluator.getInputCount(operation)) {
             inputCount = evaluator.getInputCount(operation);
             inputType = evaluator.getInputType(operation);
+
             while (index < inputCount) {
-                if (!this.config.values[index]) {
-                    this.config.values[index] = (inputType === 'number' ? 0 : '');
+                if (inputType === 'select') {
+                    newInput = $('<select>' + this.generateSelectOptions() + '</select>');
+                    emitChange = true;
+                } else {
+                    const defaultValue = inputType === 'number' ? 0 : '';
+                    const value = this.config.values[index] || defaultValue;
+                    this.config.values[index] = value;
+                    newInput = $('<input type = "' + inputType + '" value = "' + value + '"></input>');
                 }
-                newInput = $('<input type = "' + inputType + '" value = "' + this.config.values[index] + '"> </input>');
+
                 this.valueInputs.push(newInput.get(0));
                 inputArea.append(newInput);
                 index += 1;
             }
+
+            if (emitChange) {
+                this.eventEmitter.emit('change', {
+                    value: Number(newInput[0].options[0].value),
+                    property: 'values[0]',
+                    index: this.index
+                });
+            }
         }
+    };
+
+    Condition.prototype.generateSelectOptions = function () {
+        let telemetryMetadata = this.conditionManager.getTelemetryMetadata(this.config.object);
+        let options = '';
+        telemetryMetadata[this.config.key].enumerations.forEach(enumeration => {
+            options += '<option value="' + enumeration.value + '">' + enumeration.string + '</option>';
+        });
+
+        return options;
     };
 
     return Condition;

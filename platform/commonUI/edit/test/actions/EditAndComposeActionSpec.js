@@ -25,8 +25,7 @@ define(
     function (EditAndComposeAction) {
 
         describe("The Link action", function () {
-            var mockQ,
-                mockDomainObject,
+            var mockDomainObject,
                 mockParent,
                 mockContext,
                 mockComposition,
@@ -47,13 +46,10 @@ define(
             }
 
             beforeEach(function () {
-
-
                 mockDomainObject = jasmine.createSpyObj(
                     "domainObject",
                     ["getId", "getCapability"]
                 );
-                mockQ = { when: mockPromise };
                 mockParent = {
                     getModel: function () {
                         return model;
@@ -97,7 +93,6 @@ define(
                 action = new EditAndComposeAction(actionContext);
             });
 
-
             it("adds to the parent's composition when performed", function () {
                 action.perform();
                 expect(mockComposition.add)
@@ -110,8 +105,8 @@ define(
                 expect(mockEditAction.perform).toHaveBeenCalled();
             });
 
-            it("Does not enable edit mode for objects that do not have an" +
-                " edit action", function () {
+            it("Does not enable edit mode for objects that do not have an"
+                + " edit action", function () {
                 mockActionCapability.getActions.and.returnValue([]);
                 action.perform();
                 expect(mockEditAction.perform).not.toHaveBeenCalled();

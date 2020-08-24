@@ -34,25 +34,27 @@ define([
      * values near the cursor.
      */
     function MCTPlotController($scope, $element, $window) {
-        this.$scope = $scope;
-        this.$scope.config = this.config;
-        this.$scope.plot = this;
-        this.$element = $element;
-        this.$window = $window;
+        this.$onInit = () => {
+            this.$scope = $scope;
+            this.$scope.config = this.config;
+            this.$scope.plot = this;
+            this.$element = $element;
+            this.$window = $window;
 
-        this.xScale = new LinearScale(this.config.xAxis.get('displayRange'));
-        this.yScale = new LinearScale(this.config.yAxis.get('displayRange'));
+            this.xScale = new LinearScale(this.config.xAxis.get('displayRange'));
+            this.yScale = new LinearScale(this.config.yAxis.get('displayRange'));
 
-        this.pan = undefined;
-        this.marquee = undefined;
+            this.pan = undefined;
+            this.marquee = undefined;
 
-        this.chartElementBounds = undefined;
-        this.tickUpdate = false;
+            this.chartElementBounds = undefined;
+            this.tickUpdate = false;
 
-        this.$scope.plotHistory = this.plotHistory = [];
-        this.listenTo(this.$scope, 'plot:clearHistory', this.clear, this);
+            this.$scope.plotHistory = this.plotHistory = [];
+            this.listenTo(this.$scope, 'plot:clearHistory', this.clear, this);
 
-        this.initialize();
+            this.initialize();
+        };
     }
 
     MCTPlotController.$inject = ['$scope', '$element', '$window'];
@@ -63,13 +65,13 @@ define([
         if (this.$canvas) {
             this.stopListening(this.$canvas);
         }
+
         this.$canvas = this.$element.find('canvas');
 
         this.listenTo(this.$canvas, 'mousemove', this.trackMousePosition, this);
         this.listenTo(this.$canvas, 'mouseleave', this.untrackMousePosition, this);
         this.listenTo(this.$canvas, 'mousedown', this.onMouseDown, this);
-
-        this.watchForMarquee();
+        this.listenTo(this.$canvas, 'wheel', this.wheelZoom, this);
     };
 
     MCTPlotController.prototype.initialize = function () {
@@ -78,11 +80,7 @@ define([
         this.listenTo(this.$canvas, 'mousemove', this.trackMousePosition, this);
         this.listenTo(this.$canvas, 'mouseleave', this.untrackMousePosition, this);
         this.listenTo(this.$canvas, 'mousedown', this.onMouseDown, this);
-
-        this.watchForMarquee();
-
-        this.listenTo(this.$window, 'keydown', this.toggleInteractionMode, this);
-        this.listenTo(this.$window, 'keyup', this.resetInteractionMode, this);
+        this.listenTo(this.$canvas, 'wheel', this.wheelZoom, this);
 
         this.$scope.rectangles = [];
         this.$scope.tickWidth = 0;
@@ -92,13 +90,47 @@ define([
         this.$scope.series = this.config.series.models;
         this.$scope.legend = this.config.legend;
 
+        this.$scope.yAxisLabel = this.config.yAxis.get('label');
+
+        this.cursorGuideVertical = this.$element[0].querySelector('.js-cursor-guide--v');
+        this.cursorGuideHorizontal = this.$element[0].querySelector('.js-cursor-guide--h');
+        this.cursorGuide = false;
+
+        this.listenTo(this.$scope, 'cursorguide', this.toggleCursorGuide, this);
+
         this.listenTo(this.$scope, '$destroy', this.destroy, this);
         this.listenTo(this.$scope, 'plot:tickWidth', this.onTickWidthChange, this);
         this.listenTo(this.$scope, 'plot:highlight:set', this.onPlotHighlightSet, this);
         this.listenTo(this.$scope, 'plot:reinitializeCanvas', this.initCanvas, this);
-
         this.listenTo(this.config.xAxis, 'change:displayRange', this.onXAxisChange, this);
         this.listenTo(this.config.yAxis, 'change:displayRange', this.onYAxisChange, this);
+
+        this.setUpYAxisOptions();
+    };
+
+    MCTPlotController.prototype.setUpYAxisOptions = function () {
+        if (this.$scope.series.length === 1) {
+            let metadata = this.$scope.series[0].metadata;
+
+            this.$scope.yKeyOptions = metadata
+                .valuesForHints(['range'])
+                .map(function (o) {
+                    return {
+                        name: o.name,
+                        key: o.key
+                    };
+                });
+
+            //  set yAxisLabel if none is set yet
+            if (this.$scope.yAxisLabel === 'none') {
+                let yKey = this.$scope.series[0].model.yKey;
+                let yKeyModel = this.$scope.yKeyOptions.filter(o => o.key === yKey)[0];
+
+                this.$scope.yAxisLabel = yKeyModel.name;
+            }
+        } else {
+            this.$scope.yKeyOptions = undefined;
+        }
     };
 
     MCTPlotController.prototype.onXAxisChange = function (displayBounds) {
@@ -119,7 +151,7 @@ define([
             this.$scope.tickWidth = width;
         } else {
             // Otherwise, only accept tick with if it's larger.
-            var newWidth = Math.max(width, this.$scope.tickWidth);
+            const newWidth = Math.max(width, this.$scope.tickWidth);
             if (newWidth !== this.$scope.tickWidth) {
                 this.$scope.tickWidth = newWidth;
                 this.$scope.$digest();
@@ -129,13 +161,19 @@ define([
 
     MCTPlotController.prototype.trackMousePosition = function ($event) {
         this.trackChartElementBounds($event);
-        this.xScale.range({min: 0, max: this.chartElementBounds.width});
-        this.yScale.range({min: 0, max: this.chartElementBounds.height});
+        this.xScale.range({
+            min: 0,
+            max: this.chartElementBounds.width
+        });
+        this.yScale.range({
+            min: 0,
+            max: this.chartElementBounds.height
+        });
 
         this.positionOverElement = {
             x: $event.clientX - this.chartElementBounds.left,
-            y: this.chartElementBounds.height -
-                ($event.clientY - this.chartElementBounds.top)
+            y: this.chartElementBounds.height
+                - ($event.clientY - this.chartElementBounds.top)
         };
 
         this.positionOverPlot = {
@@ -143,11 +181,20 @@ define([
             y: this.yScale.invert(this.positionOverElement.y)
         };
 
+        if (this.cursorGuide) {
+            this.updateCrosshairs($event);
+        }
+
         this.highlightValues(this.positionOverPlot.x);
         this.updateMarquee();
         this.updatePan();
         this.$scope.$digest();
         $event.preventDefault();
+    };
+
+    MCTPlotController.prototype.updateCrosshairs = function ($event) {
+        this.cursorGuideVertical.style.left = ($event.clientX - this.chartElementBounds.x) + 'px';
+        this.cursorGuideHorizontal.style.top = ($event.clientY - this.chartElementBounds.y) + 'px';
     };
 
     MCTPlotController.prototype.trackChartElementBounds = function ($event) {
@@ -160,29 +207,33 @@ define([
         if (point === this.highlightPoint) {
             return;
         }
+
         this.highlightValues(point);
     };
 
     MCTPlotController.prototype.highlightValues = function (point) {
         this.highlightPoint = point;
         this.$scope.$emit('plot:highlight:update', point);
+        if (this.$scope.lockHighlightPoint) {
+            return;
+        }
+
         if (!point) {
             this.$scope.highlights = [];
-            this.$scope.series.map(function (series) {
-                delete series.closest;
-            });
+            this.$scope.series.forEach(series => delete series.closest);
         } else {
             this.$scope.highlights = this.$scope.series
-                .filter(function (series) {
-                    return series.data.length > 0;
-                }).map(function (series) {
+                .filter(series => series.data.length > 0)
+                .map(series => {
                     series.closest = series.nearestPoint(point);
+
                     return {
                         series: series,
                         point: series.closest
                     };
-                }, this);
+                });
         }
+
         this.$scope.$digest();
     };
 
@@ -193,12 +244,16 @@ define([
     };
 
     MCTPlotController.prototype.onMouseDown = function ($event) {
+        // do not monitor drag events on browser context click
+        if (event.ctrlKey) {
+            return;
+        }
+
         this.listenTo(this.$window, 'mouseup', this.onMouseUp, this);
         this.listenTo(this.$window, 'mousemove', this.trackMousePosition, this);
-        if (this.allowPan) {
+        if (event.altKey) {
             return this.startPan($event);
-        }
-        if (this.allowMarquee) {
+        } else {
             return this.startMarquee($event);
         }
     };
@@ -206,24 +261,43 @@ define([
     MCTPlotController.prototype.onMouseUp = function ($event) {
         this.stopListening(this.$window, 'mouseup', this.onMouseUp, this);
         this.stopListening(this.$window, 'mousemove', this.trackMousePosition, this);
+
+        if (this.isMouseClick()) {
+            this.$scope.lockHighlightPoint = !this.$scope.lockHighlightPoint;
+        }
+
         if (this.pan) {
-            this.endPan($event);
+            return this.endPan($event);
         }
+
         if (this.marquee) {
-            this.endMarquee($event);
+            return this.endMarquee($event);
         }
-        this.$scope.$apply();
+    };
+
+    MCTPlotController.prototype.isMouseClick = function () {
+        if (!this.marquee) {
+            return false;
+        }
+
+        const { start, end } = this.marquee;
+
+        return start.x === end.x && start.y === end.y;
     };
 
     MCTPlotController.prototype.updateMarquee = function () {
         if (!this.marquee) {
             return;
         }
+
         this.marquee.end = this.positionOverPlot;
         this.marquee.endPixels = this.positionOverElement;
     };
 
     MCTPlotController.prototype.startMarquee = function ($event) {
+        this.$canvas.removeClass('plot-drag');
+        this.$canvas.addClass('plot-marquee');
+
         this.trackMousePosition($event);
         if (this.positionOverPlot) {
             this.freeze();
@@ -240,11 +314,11 @@ define([
     };
 
     MCTPlotController.prototype.endMarquee = function () {
-        var startPixels = this.marquee.startPixels;
-        var endPixels = this.marquee.endPixels;
-        var marqueeDistance = Math.sqrt(
-            Math.pow(startPixels.x - endPixels.x, 2) +
-            Math.pow(startPixels.y - endPixels.y, 2)
+        const startPixels = this.marquee.startPixels;
+        const endPixels = this.marquee.endPixels;
+        const marqueeDistance = Math.sqrt(
+            Math.pow(startPixels.x - endPixels.x, 2)
+            + Math.pow(startPixels.y - endPixels.y, 2)
         );
         // Don't zoom if mouse moved less than 7.5 pixels.
         if (marqueeDistance > 7.5) {
@@ -260,13 +334,129 @@ define([
         } else {
             // A history entry is created by startMarquee, need to remove
             // if marquee zoom doesn't occur.
-            this.back();
+            this.plotHistory.pop();
         }
+
         this.$scope.rectangles = [];
         this.marquee = undefined;
     };
 
+    MCTPlotController.prototype.zoom = function (zoomDirection, zoomFactor) {
+        const currentXaxis = this.$scope.xAxis.get('displayRange');
+        const currentYaxis = this.$scope.yAxis.get('displayRange');
+
+        // when there is no plot data, the ranges can be undefined
+        // in which case we should not perform zoom
+        if (!currentXaxis || !currentYaxis) {
+            return;
+        }
+
+        this.freeze();
+        this.trackHistory();
+
+        const xAxisDist = (currentXaxis.max - currentXaxis.min) * zoomFactor;
+        const yAxisDist = (currentYaxis.max - currentYaxis.min) * zoomFactor;
+
+        if (zoomDirection === 'in') {
+            this.$scope.xAxis.set('displayRange', {
+                min: currentXaxis.min + xAxisDist,
+                max: currentXaxis.max - xAxisDist
+            });
+
+            this.$scope.yAxis.set('displayRange', {
+                min: currentYaxis.min + yAxisDist,
+                max: currentYaxis.max - yAxisDist
+            });
+        } else if (zoomDirection === 'out') {
+            this.$scope.xAxis.set('displayRange', {
+                min: currentXaxis.min - xAxisDist,
+                max: currentXaxis.max + xAxisDist
+            });
+
+            this.$scope.yAxis.set('displayRange', {
+                min: currentYaxis.min - yAxisDist,
+                max: currentYaxis.max + yAxisDist
+            });
+        }
+
+        this.$scope.$emit('user:viewport:change:end');
+    };
+
+    MCTPlotController.prototype.wheelZoom = function (event) {
+        const ZOOM_AMT = 0.1;
+        event.preventDefault();
+
+        if (!this.positionOverPlot) {
+            return;
+        }
+
+        let xDisplayRange = this.$scope.xAxis.get('displayRange');
+        let yDisplayRange = this.$scope.yAxis.get('displayRange');
+
+        // when there is no plot data, the ranges can be undefined
+        // in which case we should not perform zoom
+        if (!xDisplayRange || !yDisplayRange) {
+            return;
+        }
+
+        this.freeze();
+        window.clearTimeout(this.stillZooming);
+
+        let xAxisDist = (xDisplayRange.max - xDisplayRange.min);
+        let yAxisDist = (yDisplayRange.max - yDisplayRange.min);
+        let xDistMouseToMax = xDisplayRange.max - this.positionOverPlot.x;
+        let xDistMouseToMin = this.positionOverPlot.x - xDisplayRange.min;
+        let yDistMouseToMax = yDisplayRange.max - this.positionOverPlot.y;
+        let yDistMouseToMin = this.positionOverPlot.y - yDisplayRange.min;
+        let xAxisMaxDist = xDistMouseToMax / xAxisDist;
+        let xAxisMinDist = xDistMouseToMin / xAxisDist;
+        let yAxisMaxDist = yDistMouseToMax / yAxisDist;
+        let yAxisMinDist = yDistMouseToMin / yAxisDist;
+
+        let plotHistoryStep;
+
+        if (!plotHistoryStep) {
+            plotHistoryStep = {
+                x: xDisplayRange,
+                y: yDisplayRange
+            };
+        }
+
+        if (event.wheelDelta < 0) {
+
+            this.$scope.xAxis.set('displayRange', {
+                min: xDisplayRange.min + ((xAxisDist * ZOOM_AMT) * xAxisMinDist),
+                max: xDisplayRange.max - ((xAxisDist * ZOOM_AMT) * xAxisMaxDist)
+            });
+
+            this.$scope.yAxis.set('displayRange', {
+                min: yDisplayRange.min + ((yAxisDist * ZOOM_AMT) * yAxisMinDist),
+                max: yDisplayRange.max - ((yAxisDist * ZOOM_AMT) * yAxisMaxDist)
+            });
+        } else if (event.wheelDelta >= 0) {
+
+            this.$scope.xAxis.set('displayRange', {
+                min: xDisplayRange.min - ((xAxisDist * ZOOM_AMT) * xAxisMinDist),
+                max: xDisplayRange.max + ((xAxisDist * ZOOM_AMT) * xAxisMaxDist)
+            });
+
+            this.$scope.yAxis.set('displayRange', {
+                min: yDisplayRange.min - ((yAxisDist * ZOOM_AMT) * yAxisMinDist),
+                max: yDisplayRange.max + ((yAxisDist * ZOOM_AMT) * yAxisMaxDist)
+            });
+        }
+
+        this.stillZooming = window.setTimeout(function () {
+            this.plotHistory.push(plotHistoryStep);
+            plotHistoryStep = undefined;
+            this.$scope.$emit('user:viewport:change:end');
+        }.bind(this), 250);
+    };
+
     MCTPlotController.prototype.startPan = function ($event) {
+        this.$canvas.addClass('plot-drag');
+        this.$canvas.removeClass('plot-marquee');
+
         this.trackMousePosition($event);
         this.freeze();
         this.pan = {
@@ -274,6 +464,7 @@ define([
         };
         $event.preventDefault();
         this.trackHistory();
+
         return false;
     };
 
@@ -282,10 +473,11 @@ define([
         if (!this.pan) {
             return;
         }
-        var dX = this.pan.start.x - this.positionOverPlot.x,
-            dY = this.pan.start.y - this.positionOverPlot.y,
-            xRange = this.config.xAxis.get('displayRange'),
-            yRange = this.config.yAxis.get('displayRange');
+
+        const dX = this.pan.start.x - this.positionOverPlot.x;
+        const dY = this.pan.start.y - this.positionOverPlot.y;
+        const xRange = this.config.xAxis.get('displayRange');
+        const yRange = this.config.yAxis.get('displayRange');
 
         this.config.xAxis.set('displayRange', {
             min: xRange.min + dX,
@@ -309,32 +501,6 @@ define([
         this.$scope.$emit('user:viewport:change:end');
     };
 
-    MCTPlotController.prototype.watchForMarquee = function () {
-        this.$canvas.removeClass('plot-drag');
-        this.$canvas.addClass('plot-marquee');
-        this.allowPan = false;
-        this.allowMarquee = true;
-    };
-
-    MCTPlotController.prototype.watchForPan = function () {
-        this.$canvas.addClass('plot-drag');
-        this.$canvas.removeClass('plot-marquee');
-        this.allowPan = true;
-        this.allowMarquee = false;
-    };
-
-    MCTPlotController.prototype.toggleInteractionMode = function (event) {
-        if (event.keyCode === 18) { // control key.
-            this.watchForPan();
-        }
-    };
-
-    MCTPlotController.prototype.resetInteractionMode = function (event) {
-        if (event.keyCode === 18) {
-            this.watchForMarquee();
-        }
-    };
-
     MCTPlotController.prototype.freeze = function () {
         this.config.yAxis.set('frozen', true);
         this.config.xAxis.set('frozen', true);
@@ -348,11 +514,13 @@ define([
     };
 
     MCTPlotController.prototype.back = function () {
-        var previousAxisRanges = this.plotHistory.pop();
+        const previousAxisRanges = this.plotHistory.pop();
         if (this.plotHistory.length === 0) {
             this.clear();
+
             return;
         }
+
         this.config.xAxis.set('displayRange', previousAxisRanges.x);
         this.config.yAxis.set('displayRange', previousAxisRanges.y);
         this.$scope.$emit('user:viewport:change:end');
@@ -360,6 +528,20 @@ define([
 
     MCTPlotController.prototype.destroy = function () {
         this.stopListening();
+    };
+
+    MCTPlotController.prototype.toggleCursorGuide = function ($event) {
+        this.cursorGuide = !this.cursorGuide;
+    };
+
+    MCTPlotController.prototype.toggleYAxisLabel = function (label, options, series) {
+        let yAxisObject = options.filter(o => o.name === label)[0];
+
+        if (yAxisObject) {
+            series.emit('change:yKey', yAxisObject.key);
+            this.config.yAxis.set('label', label);
+            this.$scope.yAxisLabel = label;
+        }
     };
 
     return MCTPlotController;

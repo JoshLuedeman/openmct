@@ -19,30 +19,30 @@
  * this source code distribution or the Licensing information page available
  * at runtime from the About dialog for additional information.
  *****************************************************************************/
-/*global define*/
 
 define([
-    "./src/ExampleIdentityService",
-    'legacyRegistry'
+    "./src/ExampleIdentityService"
 ], function (
-    ExampleIdentityService,
-    legacyRegistry
+    ExampleIdentityService
 ) {
     "use strict";
 
-    legacyRegistry.register("example/identity", {
-        "extensions": {
-            "components": [
-                {
-                    "implementation": ExampleIdentityService,
-                    "provides": "identityService",
-                    "type": "provider",
-                    "depends": [
-                        "dialogService",
-                        "$q"
-                    ]
-                }
-            ]
+    return {
+        name: "example/identity",
+        definition: {
+            "extensions": {
+                "components": [
+                    {
+                        "implementation": ExampleIdentityService,
+                        "provides": "identityService",
+                        "type": "provider",
+                        "depends": [
+                            "dialogService",
+                            "$q"
+                        ]
+                    }
+                ]
+            }
         }
-    });
+    };
 });

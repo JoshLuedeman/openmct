@@ -22,10 +22,10 @@
 
 define([
     'zepto',
-    'text!../../res/templates/tree/toggle.html'
+    '../../res/templates/tree/toggle.html'
 ], function ($, toggleTemplate) {
     function ToggleView(state) {
-        this.expanded = !!state;
+        this.expanded = Boolean(state);
         this.callbacks = [];
         this.el = $(toggleTemplate);
         this.el.on('click', function () {
@@ -37,9 +37,9 @@ define([
         this.expanded = state;
 
         if (state) {
-            this.el.addClass('expanded');
+            this.el.addClass('c-disclosure-triangle--expanded');
         } else {
-            this.el.removeClass('expanded');
+            this.el.removeClass('c-disclosure-triangle--expanded');
         }
 
         this.callbacks.forEach(function (callback) {
@@ -49,6 +49,7 @@ define([
 
     ToggleView.prototype.observe = function (callback) {
         this.callbacks.push(callback);
+
         return function () {
             this.callbacks = this.callbacks.filter(function (c) {
                 return c !== callback;

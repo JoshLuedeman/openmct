@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Open MCT, Copyright (c) 2014-2017, United States Government
+ * Open MCT, Copyright (c) 2014-2020, United States Government
  * as represented by the Administrator of the National Aeronautics and Space
  * Administration. All rights reserved.
  *
@@ -19,8 +19,6 @@
  * this source code distribution or the Licensing information page available
  * at runtime from the About dialog for additional information.
  *****************************************************************************/
-
-/*global self*/
 
 (function () {
 
@@ -64,13 +62,14 @@
                     data: {
                         name: data.name,
                         utc: nextStep,
-                        yesterday: nextStep - 60*60*24*1000,
-                        sin: sin(nextStep, data.period, data.amplitude, data.offset, data.phase),
-                        cos: cos(nextStep, data.period, data.amplitude, data.offset, data.phase)
+                        yesterday: nextStep - 60 * 60 * 24 * 1000,
+                        sin: sin(nextStep, data.period, data.amplitude, data.offset, data.phase, data.randomness),
+                        cos: cos(nextStep, data.period, data.amplitude, data.offset, data.phase, data.randomness)
                     }
                 });
                 nextStep += step;
             }
+
             return nextStep;
         }
 
@@ -84,10 +83,11 @@
 
     function onRequest(message) {
         var request = message.data;
-        if (request.end == undefined) {
+        if (request.end === undefined) {
             request.end = Date.now();
         }
-        if (request.start == undefined){
+
+        if (request.start === undefined) {
             request.start = request.end - FIFTEEN_MINUTES;
         }
 
@@ -99,6 +99,7 @@
         var offset = request.offset;
         var dataRateInHz = request.dataRateInHz;
         var phase = request.phase;
+        var randomness = request.randomness;
 
         var step = 1000 / dataRateInHz;
         var nextStep = start - (start % step) + step;
@@ -109,25 +110,26 @@
             data.push({
                 name: request.name,
                 utc: nextStep,
-                yesterday: nextStep - 60*60*24*1000,
-                sin: sin(nextStep, period, amplitude, offset, phase),
-                cos: cos(nextStep, period, amplitude, offset, phase)
+                yesterday: nextStep - 60 * 60 * 24 * 1000,
+                sin: sin(nextStep, period, amplitude, offset, phase, randomness),
+                cos: cos(nextStep, period, amplitude, offset, phase, randomness)
             });
         }
+
         self.postMessage({
             id: message.id,
             data: data
         });
     }
 
-    function cos(timestamp, period, amplitude, offset, phase) {
-        return amplitude *
-            Math.cos(phase + (timestamp / period / 1000 * Math.PI * 2)) + offset;
+    function cos(timestamp, period, amplitude, offset, phase, randomness) {
+        return amplitude
+            * Math.cos(phase + (timestamp / period / 1000 * Math.PI * 2)) + (amplitude * Math.random() * randomness) + offset;
     }
 
-    function sin(timestamp, period, amplitude, offset, phase) {
-        return amplitude *
-            Math.sin(phase + (timestamp / period / 1000 * Math.PI * 2)) + offset;
+    function sin(timestamp, period, amplitude, offset, phase, randomness) {
+        return amplitude
+            * Math.sin(phase + (timestamp / period / 1000 * Math.PI * 2)) + (amplitude * Math.random() * randomness) + offset;
     }
 
     function sendError(error, message) {

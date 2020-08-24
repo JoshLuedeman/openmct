@@ -68,19 +68,18 @@ define(
                 );
             });
 
-
             it("aliases 'instantiate' as 'invoke'", function () {
                 expect(instantiation.invoke).toBe(instantiation.instantiate);
             });
 
             it("uses instantiate and contextualize to create domain objects", function () {
                 var mockDomainObj = jasmine.createSpyObj('domainObject', [
-                    'getId',
-                    'getModel',
-                    'getCapability',
-                    'useCapability',
-                    'hasCapability'
-                ]), testModel = { someKey: "some value" };
+                        'getId',
+                        'getModel',
+                        'getCapability',
+                        'useCapability',
+                        'hasCapability'
+                    ]), testModel = { someKey: "some value" };
                 mockInstantiate.and.returnValue(mockDomainObj);
                 instantiation.instantiate(testModel);
                 expect(mockInstantiate)

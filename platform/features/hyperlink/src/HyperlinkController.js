@@ -43,6 +43,7 @@ define(
                 return true;
             }
         };
+
         /**Function to specify the format in which the hyperlink should be created
         @returns true if the hyperlink is chosen to be created as a button, false if a link
         **/
@@ -50,9 +51,11 @@ define(
             if (this.$scope.domainObject.getModel().displayFormat === "link") {
                 return false;
             }
+
             return true;
         };
+
         return HyperlinkController;
     }
 
-  );
+);

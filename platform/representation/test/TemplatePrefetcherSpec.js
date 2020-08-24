@@ -20,7 +20,6 @@
  * at runtime from the About dialog for additional information.
  *****************************************************************************/
 
-
 define(
     ["../src/TemplatePrefetcher"],
     function (TemplatePrefetcher) {
@@ -29,7 +28,7 @@ define(
             var mockTemplateLinker,
                 testExtensions,
                 testPathPrefix,
-                prefetcher;
+                prefetcher; // eslint-disable-line
 
             beforeEach(function () {
                 testPathPrefix = "some/path/";

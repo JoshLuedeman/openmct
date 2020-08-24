@@ -63,6 +63,7 @@ define(
                         ]);
                     mockCompiledTemplate.and.returnValue(mockElement);
                     mockElements.push(mockElement);
+
                     return mockCompiledTemplate;
                 });
                 mockRootScope.$new.and.returnValue(mockScope);
@@ -114,9 +115,9 @@ define(
                         location = [vertical, horizontal].join('-');
                     describe("when bubble goes " + location, function () {
                         var expectedLocation = [
-                                goesUp ? "bottom" : "top",
-                                goesLeft ? "right" : "left"
-                            ].join('-');
+                            goesUp ? "bottom" : "top",
+                            goesLeft ? "right" : "left"
+                        ].join('-');
 
                         beforeEach(function () {
                             mockPopup.goesUp.and.returnValue(goesUp);

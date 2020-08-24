@@ -22,36 +22,37 @@
 
 define([
 
-], function(
+], function (
 
 ) {
     function ImageryPlugin() {
 
         var IMAGE_SAMPLES = [
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18731.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18732.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18733.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18734.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18735.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18736.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18737.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18738.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18739.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18740.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18741.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18742.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18743.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18744.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18745.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18746.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18747.jpg",
-                "https://www.hq.nasa.gov/alsj/a16/AS16-117-18748.jpg"
-            ];
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18731.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18732.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18733.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18734.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18735.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18736.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18737.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18738.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18739.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18740.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18741.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18742.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18743.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18744.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18745.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18746.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18747.jpg",
+            "https://www.hq.nasa.gov/alsj/a16/AS16-117-18748.jpg"
+        ];
 
         function pointForTimestamp(timestamp, name) {
             return {
                 name: name,
                 utc: Math.floor(timestamp / 5000) * 5000,
+                local: Math.floor(timestamp / 5000) * 5000,
                 url: IMAGE_SAMPLES[Math.floor(timestamp / 5000) % IMAGE_SAMPLES.length]
             };
         }
@@ -65,7 +66,7 @@ define([
                     callback(pointForTimestamp(Date.now(), domainObject.name));
                 }, 5000);
 
-                return function (interval) {
+                return function () {
                     clearInterval(interval);
                 };
             }
@@ -78,34 +79,34 @@ define([
             },
             request: function (domainObject, options) {
                 var start = options.start;
-                var end = options.end;
+                var end = Math.min(options.end, Date.now());
                 var data = [];
                 while (start <= end && data.length < 5000) {
                     data.push(pointForTimestamp(start, domainObject.name));
                     start += 5000;
                 }
+
                 return Promise.resolve(data);
             }
         };
 
         var ladProvider = {
             supportsRequest: function (domainObject, options) {
-                return domainObject.type === 'example.imagery' &&
-                    options.strategy === 'latest';
+                return domainObject.type === 'example.imagery'
+                    && options.strategy === 'latest';
             },
             request: function (domainObject, options) {
                 return Promise.resolve([pointForTimestamp(Date.now(), domainObject.name)]);
             }
         };
 
-
         return function install(openmct) {
             openmct.types.addType('example.imagery', {
                 key: 'example.imagery',
                 name: 'Example Imagery',
                 cssClass: 'icon-image',
-                description: 'For development use. Creates example imagery ' +
-                    'data that mimics a live imagery stream.',
+                description: 'For development use. Creates example imagery '
+                    + 'data that mimics a live imagery stream.',
                 creatable: true,
                 initialize: function (object) {
                     object.telemetry = {
@@ -119,6 +120,14 @@ define([
                                 key: 'utc',
                                 format: 'utc',
                                 hints: {
+                                    domain: 2
+                                }
+                            },
+                            {
+                                name: 'Local Time',
+                                key: 'local',
+                                format: 'local-format',
+                                hints: {
                                     domain: 1
                                 }
                             },
@@ -131,7 +140,7 @@ define([
                                 }
                             }
                         ]
-                    }
+                    };
                 }
             });
 
